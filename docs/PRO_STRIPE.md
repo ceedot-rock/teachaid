@@ -10,21 +10,47 @@
 | **Chaternity create** | **$20** one-time | `prod_UyXoI7dO78mtOf` | `price_1TyaiZK8JsmXFzvIRnRRm4Mq` | https://buy.stripe.com/fZueVe0kR2X685n40g6wE07 |
 | **Chaternity join** | **$1 / month** | `prod_UyXoFwDjCMYeol` | `price_1TyailK8JsmXFzvIFDWkaK8W` | https://buy.stripe.com/cNibJ26Jf55eclDdAQ6wE08 |
 
-### Chaternities revenue split
+## Locked revenue splits (Corey 2026-07-29)
 
-Of each **$1/mo** join pass: **90%** room creator · **10% TEACHAiD Fund** (Connect application fee / transfer — wire in payouts ops).
+| Stream | Split |
+|--------|--------|
+| Curriculum submit fee $3 | **100% TEACHAiD** (non-refundable review) |
+| Accepted curriculum — ongoing | **70% creator · 30% TEACHAiD** |
+| Chaternity join $1/mo | **90% creator · 10% TEACHAiD Fund** |
 
-Admittance: creator and/or admins appointed by creator.
+## Settlement model — Financial AI Dept (school bursar)
 
-### Curriculum royalties (proposal — pending Corey lock)
+**Not** instant marketplace auto-split on every charge.
 
-| Stage | Money |
-|-------|--------|
-| Submit review fee | **$3** non-refundable (TEACHAiD keeps 100%) |
-| Accepted class — ongoing | **70% creator · 30% TEACHAiD** of net revenue attributed to that class |
-| Rejected | no royalty · no refund of $3 |
+TEACHAiD operates like a **school business office**:
 
-Attribution rules TBD (enrollments, Pro uplift, or flat monthly license). Until Connect is live, accepted creators are paid manually via Stripe dashboard transfer.
+1. **Collect** — All student/creator payments land on the **platform** Stripe account (current Payment Links + pro-verify).
+2. **Ledger** — Each SKU and (when known) creator/room id is recorded with owed amounts using the locked splits above.
+3. **Settle** — A **Financial AI Dept** process (human + agent) reviews the period ledger, then pays creators via **Stripe Connect Express Transfers** (or dashboard transfer until Connect profile is complete).
+4. **Payout cadence** — Default: **monthly** (school-style), not real-time per join.
+
+### Why this model
+
+- Matches “school pays instructors,” not “Uber pays drivers per ride.”
+- Lets review/accept curriculum **before** royalties accrue.
+- Chaternity 90/10 still holds; Fund 10% is retained on platform until period close.
+- Connect is still required for **payout rails**, not for instant destination charges.
+
+### Connect role under this model
+
+| Piece | Role |
+|-------|------|
+| Platform account | Merchant of record; holds funds |
+| Express connected accounts | Creator **payout destinations** only |
+| `POST /api/connect-onboard` | Creator opens Express account + Account Link |
+| Transfers API / period job | Financial AI Dept settles batch payouts |
+
+Platform profile must be completed once: https://dashboard.stripe.com/connect/accounts/overview  
+(Connected accounts list is currently empty — expected until first onboard.)
+
+### Attribution (curriculum)
+
+Until enrollments are metered server-side: royalties may start as **manual period awards** (accepted class × agreed base). Later: Pro uplift / chapter completions attributed to creator materials.
 
 ### Legacy (superseded for new sales)
 
@@ -43,48 +69,32 @@ All payment links complete to:
 
 `https://teachaid.vercel.app/?pro_session={CHECKOUT_SESSION_ID}`
 
-App verifies via `GET /api/pro-verify?session_id=cs_…` then grants:
+App verifies via `GET /api/pro-verify?session_id=cs_…` then grants device entitlements (Pro / trial / submit / chat credits).
 
-| Purchase | Client unlock |
-|----------|----------------|
-| Pro monthly | Pro tier while subscription active (session stored) |
-| Trial $0.99 | `trial_until` = now + 7 days · gated Pro |
-| Submit $3 | `curriculum_submit_paid` + optional creator email for royalties |
-| Chaternity create $20 | create-room credit on device |
-| Chaternity join $1/mo | join pass on device |
+**Money settlement is separate** from device unlock — Financial AI Dept owns the ledger → transfer path.
 
-## Fulfillment model (current vs optional webhook)
+## Fulfillment vs settlement
 
-**Current (shipped):** Payment Link → browser return with `session_id` → `/api/pro-verify` → localStorage entitlement.
+| Layer | Path |
+|-------|------|
+| **Access** (shipped) | Payment Link → `session_id` → `/api/pro-verify` → localStorage |
+| **Payout** (school model) | Period ledger → Connect Transfer to creator Express account |
+| **Optional webhook** | Server-side access + ledger rows (not required for beta) |
 
-**Optional later:** `api/stripe-webhook.js`
-
-- Verify `Stripe-Signature` with `STRIPE_WEBHOOK_SECRET`
-- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-- Map amount/sku → grant Pro/trial/submit/chat (KV or email allowlist)
-- Not required for Payment Link flow to work
-
-## Curriculum royalties — process
-
-1. Creator pays **$3** to submit a class for review.  
-2. If **accepted**, TEACHAiD routes **royalties** (proposed 70/30) to the creator’s Connect account.  
-3. Withdrawals via **Stripe Connect Express**.  
-4. Rejection does **not** refund the $3 review fee (stated on pricing page).
-
-### Vercel env
+## Vercel env
 
 | Name | Purpose |
 |------|---------|
-| `STRIPE_RESTRICTED_KEY` or `STRIPE_SECRET_KEY` | Verify checkout sessions |
-| `TEACHAID_PRO_PRICE_ID` | optional lock — monthly `price_1TyaelK8JsmXFzvIP2HcvIMP` |
+| `STRIPE_RESTRICTED_KEY` or `STRIPE_SECRET_KEY` | Verify sessions; Connect onboard needs write-capable secret |
+| `TEACHAID_PRO_PRICE_ID` | optional lock |
 | `XAI_API_KEY` | Grok chat + Pro TTS |
-| `STRIPE_WEBHOOK_SECRET` | only if webhook route is added |
+| `STRIPE_WEBHOOK_SECRET` | only if webhook added |
 
-### Connect (royalties) — ops checklist
+## Ops checklist
 
-- [ ] Enable Stripe Connect (Express)  
-- [ ] Creator onboarding link (Express accounts)  
-- [ ] Lock royalty % (proposal: curriculum **70/30**, Chaternity **90/10**)  
-- [ ] Application fee on join subscriptions for TEACHAiD Fund 10%  
-- [ ] Payout schedule  
-- [ ] Legal copy for TEACHAiD Fund 10%  
+- [x] Lock splits 70/30 and 90/10  
+- [x] `api/connect-onboard.js` shipped (Express + Account Link)  
+- [ ] Complete Connect **platform profile** in Stripe Dashboard (one-time)  
+- [ ] First creator onboard smoke (email → Account Link → Express)  
+- [ ] Financial AI Dept period ledger (Notion or KV) + monthly settle run  
+- [ ] Legal one-liner for TEACHAiD Fund 10%  

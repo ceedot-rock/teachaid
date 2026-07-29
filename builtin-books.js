@@ -1,4 +1,4 @@
-/* TEACHAiD built-in textbooks — foundations, Coding 101, college gen-ed */
+/* TEACHAiD built-in textbooks — foundations, Programming 101, college 101s */
 /* Each book: title, teacher, teacherBlurb, avatar, track, order, tag, card, ch:[{n,h,t}] */
 (function (global) {
   function fin(msg) {
@@ -482,10 +482,10 @@
         ),
         ch(
           "Graduate",
-          "<h2>Coding 101 complete</h2><p>You covered codes, programs, variables, strings, if/else, loops, functions, and lists.</p>" +
-            trybox("What next?", "College track: Algebra, English, Stats, and more — or load your own materials in Curriculum.") +
-            fin("🎓 Coding 101 complete"),
-          "Chapter: Graduate. Coding 101 complete: codes, programs, variables, strings, decisions, loops, functions, lists. Next: college courses or custom curriculum."
+          "<h2>Programming 101 complete</h2><p>You covered codes, programs, variables, strings, if/else, loops, functions, and lists.</p>" +
+            trybox("What next?", "College track: World History, Music, Sciences, Psych, and more — or load your own materials in Curriculum.") +
+            fin("🎓 Programming 101 complete"),
+          "Chapter: Graduate. Programming 101 complete: codes, programs, variables, strings, decisions, loops, functions, lists. Next: college courses or custom curriculum."
         ),
       ],
     },
@@ -615,21 +615,21 @@
       ],
     },
     col_hist: {
-      title: "US History Survey",
+      title: "US History 101",
       teacher: "Helen",
       teacherBlurb: "Causes, turning points, primary sources.",
       avatar: "H",
       track: "college",
       order: 4,
-      tag: "HIST",
+      tag: "HIST 101",
       tagStyle: "background:rgba(251,146,60,.12);color:#fdba74",
       card: "Founding through modern America (overview)",
       ch: [
         ch(
           "Welcome",
-          "<h2>US History Survey</h2><p>We study <strong>change over time</strong>: causes, conflicts, and how people argued about freedom and power.</p>" +
-            teach("Helen", "Helen teaches only this survey."),
-          "Chapter: Welcome. US History survey: change over time, causes, conflicts, freedom and power. Teacher Helen."
+          "<h2>US History 101</h2><p>We study <strong>change over time</strong>: causes, conflicts, and how people argued about freedom and power.</p>" +
+            teach("Helen", "Helen teaches only US History 101."),
+          "Chapter: Welcome. US History 101: change over time, causes, conflicts, freedom and power. Teacher Helen."
         ),
         ch(
           "Colonies & Revolution",
@@ -650,27 +650,27 @@
         ch(
           "Modern US",
           "<h2>20th–21st century threads</h2><p>Industrialization, world wars, civil rights movements, Cold War, globalization, and digital life. Use <strong>primary sources</strong> (speeches, laws, letters) alongside textbooks.</p>" +
-            fin("US History Survey · core complete"),
+            fin("US History 101 · core complete"),
           "Chapter: Modern US. Industrialization, world wars, civil rights, Cold War, globalization, digital era. Use primary sources."
         ),
       ],
     },
     col_bio: {
-      title: "Intro Biology",
+      title: "Biology 101",
       teacher: "Bea",
       teacherBlurb: "Cells, DNA, and how life works.",
       avatar: "B",
       track: "college",
       order: 5,
-      tag: "SCI",
+      tag: "BIO 101",
       tagStyle: "background:rgba(52,211,153,.12);color:#6ee7b7",
       card: "Cell, genetics, evolution basics",
       ch: [
         ch(
           "Welcome",
-          "<h2>Intro Biology</h2><p>Biology studies living systems — from molecules to ecosystems.</p>" +
-            teach("Bea", "Bea teaches only Intro Biology."),
-          "Chapter: Welcome. Biology studies living systems from molecules to ecosystems. Teacher Bea."
+          "<h2>Biology 101</h2><p>Biology studies living systems — from molecules to ecosystems.</p>" +
+            teach("Bea", "Bea teaches only Biology 101."),
+          "Chapter: Welcome. Biology 101 studies living systems from molecules to ecosystems. Teacher Bea."
         ),
         ch(
           "Cell",
@@ -691,7 +691,7 @@
         ch(
           "Evolution",
           "<h2>Evolution (intro)</h2><p><strong>Natural selection</strong>: heritable variation + differential survival/reproduction → populations change over generations.</p>" +
-            fin("Intro Biology · core complete"),
+            fin("Biology 101 · core complete"),
           "Chapter: Evolution intro. Natural selection: heritable variation plus differential reproduction changes populations over generations."
         ),
       ],
@@ -737,21 +737,21 @@
       ],
     },
     col_psych: {
-      title: "Intro Psychology",
+      title: "Psych 101",
       teacher: "Pia",
       teacherBlurb: "Mind, behavior, and careful methods.",
       avatar: "P",
       track: "college",
       order: 7,
-      tag: "SOC SCI",
+      tag: "PSY 101",
       tagStyle: "background:rgba(167,139,250,.12);color:#c4b5fd",
       card: "Brain, learning, and social behavior",
       ch: [
         ch(
           "Welcome",
-          "<h2>Intro Psychology</h2><p>Psychology is the science of <strong>mind and behavior</strong> — using evidence, not only intuition.</p>" +
-            teach("Pia", "Pia teaches only Intro Psychology."),
-          "Chapter: Welcome. Psychology is science of mind and behavior using evidence. Teacher Pia."
+          "<h2>Psych 101</h2><p>Psychology is the science of <strong>mind and behavior</strong> — using evidence, not only intuition.</p>" +
+            teach("Pia", "Pia teaches only Psych 101."),
+          "Chapter: Welcome. Psych 101 is science of mind and behavior using evidence. Teacher Pia."
         ),
         ch(
           "Methods",
@@ -772,7 +772,7 @@
         ch(
           "Social",
           "<h2>Social psychology (taste)</h2><p>People influence each other: conformity, obedience, stereotypes, and helping. Context shapes behavior more than we admit.</p>" +
-            fin("Intro Psychology · core complete"),
+            fin("Psych 101 · core complete"),
           "Chapter: Social. Conformity, obedience, stereotypes, helping; context shapes behavior."
         ),
       ],
@@ -897,6 +897,253 @@
         ),
       ],
     },
+
+    /* ========== Requested 101s (new + complements) ========== */
+    col_world: {
+      title: "World History 101",
+      teacher: "Orion",
+      teacherBlurb: "Global patterns — trade, empires, exchange.",
+      avatar: "O",
+      track: "college",
+      order: 11,
+      tag: "HIST 101",
+      tagStyle: "background:rgba(251,146,60,.12);color:#fdba74",
+      card: "Ancient to modern world in broad strokes",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>World History 101</h2><p>We follow <strong>connections</strong>: how people, goods, ideas, and power moved across regions — not every nation equally deep, but patterns that shaped the globe.</p>" +
+            teach("Orion", "Orion teaches only World History 101."),
+          "Chapter: Welcome. World History 101: global connections of people, goods, ideas, power. Teacher Orion."
+        ),
+        ch(
+          "Early societies",
+          "<h2>Early societies & river valleys</h2><p>Agriculture, cities, writing, and early states arose in places like Mesopotamia, the Nile, the Indus, and the Yellow River — with different timelines and forms.</p>" +
+            idea("Theme", "Surplus food + organization → more complex societies."),
+          "Chapter: Early societies. Agriculture, cities, writing, early states near major rivers. Surplus and organization enable complexity."
+        ),
+        ch(
+          "Empires & exchange",
+          "<h2>Empires, roads, and seas</h2><p>Large empires and trade networks (Silk Roads, Indian Ocean, Mediterranean) moved silk, spices, metals, religions, and technologies. Exchange was rarely one-way.</p>",
+          "Chapter: Empires & exchange. Trade networks moved goods, faiths, and tech; exchange was multi-directional."
+        ),
+        ch(
+          "Encounters",
+          "<h2>Global encounters</h2><p>From the 1400s onward, ocean voyages, colonization, the Atlantic system (including the slave trade), and resistance reshaped continents. Ask: who gained, who paid the cost?</p>",
+          "Chapter: Encounters. Ocean expansion, colonization, Atlantic system and slave trade, resistance; winners and costs."
+        ),
+        ch(
+          "Modern world",
+          "<h2>Modern world threads</h2><p>Industrialization, world wars, decolonization, the Cold War, globalization, and digital networks. World history is still being written — with many voices.</p>" +
+            fin("World History 101 · core complete"),
+          "Chapter: Modern world. Industrialization, world wars, decolonization, Cold War, globalization, digital era; many voices."
+        ),
+      ],
+    },
+    col_music: {
+      title: "Music Theory 101",
+      teacher: "Melody",
+      teacherBlurb: "Notes, scales, rhythm — hear the rules.",
+      avatar: "M",
+      track: "college",
+      order: 12,
+      tag: "MUS 101",
+      tagStyle: "background:rgba(244,114,182,.12);color:#f9a8d4",
+      card: "Pitch, rhythm, scales, and harmony basics",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>Music Theory 101</h2><p>Theory names what you already hear: pitch, duration, pattern, and how notes work together.</p>" +
+            teach("Melody", "Melody teaches only Music Theory 101."),
+          "Chapter: Welcome. Music Theory 101 names pitch, duration, pattern, and how notes work together. Teacher Melody."
+        ),
+        ch(
+          "Pitch & staff",
+          "<h2>Pitch & the staff</h2><p>Higher/lower sound is <strong>pitch</strong>. Notes sit on a <strong>staff</strong> (five lines). Clefs (treble, bass) tell you which pitch each line means.</p>",
+          "Chapter: Pitch & staff. Pitch is high/low. Staff has five lines; clefs assign pitches to lines."
+        ),
+        ch(
+          "Rhythm",
+          "<h2>Rhythm & meter</h2><p><strong>Beat</strong> is the pulse. Note values (whole, half, quarter…) show duration. <strong>Meter</strong> groups beats (e.g. 4/4 — four quarter-note beats per bar).</p>",
+          "Chapter: Rhythm. Beat is pulse; note values set duration; meter groups beats (e.g. 4/4)."
+        ),
+        ch(
+          "Scales & keys",
+          "<h2>Scales & keys</h2><p>A <strong>major scale</strong> pattern of whole and half steps sounds “bright” to many ears; <strong>minor</strong> often sounds darker. A <strong>key</strong> is the home base of a piece.</p>" +
+            idea("Ear first", "Sing do–re–mi — that’s scale steps in action."),
+          "Chapter: Scales & keys. Major/minor scale patterns; key is home base. Whole and half steps build scales."
+        ),
+        ch(
+          "Intervals & chords",
+          "<h2>Intervals & chords</h2><p>An <strong>interval</strong> is the distance between two pitches. A <strong>chord</strong> stacks three or more notes (e.g. major triad: root + major third + perfect fifth).</p>" +
+            fin("Music Theory 101 · core complete"),
+          "Chapter: Intervals & chords. Interval = distance between pitches. Chord stacks notes; major triad = root + M3 + P5."
+        ),
+      ],
+    },
+    col_relig: {
+      title: "Religion & Spirituality 101",
+      teacher: "Soren",
+      teacherBlurb: "Beliefs, practices, and living questions — respectfully.",
+      avatar: "S",
+      track: "college",
+      order: 13,
+      tag: "REL 101",
+      tagStyle: "background:rgba(167,139,250,.12);color:#c4b5fd",
+      card: "World traditions, practice, and meaning",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>Religion & Spirituality 101</h2><p>We study how people seek meaning, community, ethics, and the sacred — with <strong>respect</strong> and without requiring you to adopt any one path.</p>" +
+            teach("Soren", "Soren teaches only this course. Curiosity over mockery."),
+          "Chapter: Welcome. Study meaning, community, ethics, sacred with respect; no requirement to adopt a path. Teacher Soren."
+        ),
+        ch(
+          "What we study",
+          "<h2>What counts as religion / spirituality?</h2><p>Common lenses: stories and scriptures, rituals, ethics, community, experience of the transcendent or ultimate. <strong>Spirituality</strong> may be less institution-bound; overlap is large.</p>",
+          "Chapter: What we study. Lenses: stories, ritual, ethics, community, transcendence. Spirituality may be less institutional."
+        ),
+        ch(
+          "Major traditions",
+          "<h2>Major traditions (map, not depth)</h2><p>Brief map: Indigenous traditions; Hinduism; Buddhism; Judaism; Christianity; Islam; Sikhism; Chinese traditions (e.g. Confucian/Daoist streams); newer movements. Each is internally diverse.</p>" +
+            idea("Caution", "A 101 never replaces lived practice or community voices."),
+          "Chapter: Major traditions. Brief map of major world traditions; each is diverse. Intro maps are incomplete."
+        ),
+        ch(
+          "Practice",
+          "<h2>Practice & community</h2><p>Prayer, meditation, song, pilgrimage, feast and fast, service, and ethical rules shape daily life. Community often matters as much as private belief.</p>",
+          "Chapter: Practice. Prayer, meditation, song, pilgrimage, feast/fast, service, ethics; community and belief together."
+        ),
+        ch(
+          "Dialogue",
+          "<h2>Dialogue & pluralism</h2><p>Plural societies meet difference. Skills: listen first, avoid straw-manning, distinguish critique of ideas from contempt for people. Shared ethics (compassion, justice) often bridge traditions.</p>" +
+            fin("Religion & Spirituality 101 · core complete"),
+          "Chapter: Dialogue. Listen first; critique ideas not people; shared ethics can bridge traditions in plural societies."
+        ),
+      ],
+    },
+    col_mubiz: {
+      title: "Music Business 101",
+      teacher: "Reed",
+      teacherBlurb: "Rights, revenue, and the modern music industry.",
+      avatar: "R",
+      track: "college",
+      order: 14,
+      tag: "BUS 101",
+      tagStyle: "background:rgba(251,191,36,.12);color:#fbbf24",
+      card: "Copyright, streaming, roles, and deals",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>Music Business 101</h2><p>Music is art <em>and</em> an industry: rights, money flows, and careers around making and selling sound.</p>" +
+            teach("Reed", "Reed teaches only Music Business 101."),
+          "Chapter: Welcome. Music business: rights, money, careers around creating and selling music. Teacher Reed."
+        ),
+        ch(
+          "Copyright",
+          "<h2>Copyright basics</h2><p>Two big copyrights: the <strong>composition</strong> (songwriting/publishing) and the <strong>sound recording</strong> (the master). Who owns which changes who gets paid.</p>" +
+            idea("Rule of thumb", "Write it down. Register when it matters. Know what you signed."),
+          "Chapter: Copyright. Composition vs sound recording (master) rights; ownership drives who gets paid."
+        ),
+        ch(
+          "Revenue",
+          "<h2>How money moves</h2><p>Streams, downloads, sync (ads/film/games), live shows, merch, publishing splits, neighboring rights. Tiny per-stream rates mean volume and multiple income paths matter.</p>",
+          "Chapter: Revenue. Streaming, sync, live, merch, publishing; low per-stream rates → volume and diversified income."
+        ),
+        ch(
+          "Roles",
+          "<h2>Who does what</h2><p>Artist, songwriter, producer, label, publisher, manager, booking agent, distributor, performing rights organization (PRO). DIY stacks several of these hats.</p>",
+          "Chapter: Roles. Artist, writer, producer, label, publisher, manager, agent, distributor, PRO; DIY wears many hats."
+        ),
+        ch(
+          "Deals & care",
+          "<h2>Deals & career care</h2><p>Read terms: term length, ownership of masters, advances vs recoupment, 360 deals. Build audience and catalog. Protect health — burnout ends careers faster than bad press.</p>" +
+            fin("Music Business 101 · core complete"),
+          "Chapter: Deals. Term, masters, advances/recoupment, 360 deals; audience and catalog; health and burnout risk."
+        ),
+      ],
+    },
+    col_sci: {
+      title: "Science 101",
+      teacher: "Scout",
+      teacherBlurb: "How science works — method, evidence, limits.",
+      avatar: "S",
+      track: "college",
+      order: 15,
+      tag: "SCI 101",
+      tagStyle: "background:rgba(52,211,153,.12);color:#6ee7b7",
+      card: "Scientific method across fields",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>Science 101</h2><p>Science is a way of learning about the natural world with <strong>testable claims</strong>, evidence, and revision when wrong.</p>" +
+            teach("Scout", "Scout teaches only Science 101."),
+          "Chapter: Welcome. Science: testable claims, evidence, revision. Teacher Scout."
+        ),
+        ch(
+          "Method",
+          "<h2>Scientific method (flexible)</h2><p>Observe → question → hypothesis → test → analyze → conclude → share. Real science is messier: creativity, dead ends, and better tools over time.</p>",
+          "Chapter: Method. Observe, question, hypothesize, test, analyze, conclude, share; real work is iterative and creative."
+        ),
+        ch(
+          "Evidence",
+          "<h2>Evidence & measurement</h2><p>Good measurements are reliable and valid. Controls, sample size, and replication reduce fooling ourselves. Correlation still is not causation.</p>",
+          "Chapter: Evidence. Reliable valid measurement; controls, sample size, replication; correlation ≠ causation."
+        ),
+        ch(
+          "Models",
+          "<h2>Models & theories</h2><p>A <strong>model</strong> simplifies to explain. A well-tested framework is a <strong>theory</strong> (in science, not “just a guess”). Theories guide new predictions.</p>",
+          "Chapter: Models. Models simplify; scientific theories are well-tested frameworks that predict, not mere guesses."
+        ),
+        ch(
+          "Limits",
+          "<h2>Limits & ethics</h2><p>Science answers empirical questions; values and meaning still need ethics and public choice. Fraud and bias are fought with openness and critique.</p>" +
+            fin("Science 101 · core complete"),
+          "Chapter: Limits. Empirical vs value questions; ethics; openness fights fraud and bias."
+        ),
+      ],
+    },
+    col_physio: {
+      title: "Physiology 101",
+      teacher: "Vita",
+      teacherBlurb: "How the body keeps systems working.",
+      avatar: "V",
+      track: "college",
+      order: 16,
+      tag: "PHYS 101",
+      tagStyle: "background:rgba(52,211,153,.12);color:#6ee7b7",
+      card: "Homeostasis, systems, and body function",
+      ch: [
+        ch(
+          "Welcome",
+          "<h2>Physiology 101</h2><p>Physiology asks <strong>how the body works</strong> — function of cells, organs, and systems working together.</p>" +
+            teach("Vita", "Vita teaches only Physiology 101."),
+          "Chapter: Welcome. Physiology: how the body works — cells, organs, systems. Teacher Vita."
+        ),
+        ch(
+          "Homeostasis",
+          "<h2>Homeostasis</h2><p>Keeping internal conditions (temperature, blood sugar, pH, fluid balance) in a livable range via feedback loops. Negative feedback is the common stabilizer.</p>" +
+            idea("Core idea", "Stable inside, changing outside."),
+          "Chapter: Homeostasis. Maintain internal conditions via feedback; negative feedback stabilizes."
+        ),
+        ch(
+          "Systems map",
+          "<h2>Major systems (map)</h2><ul><li><strong>Nervous</strong> — fast signals</li><li><strong>Endocrine</strong> — hormones</li><li><strong>Cardiovascular</strong> — blood transport</li><li><strong>Respiratory</strong> — gas exchange</li><li><strong>Digestive</strong> — nutrients</li><li><strong>Musculoskeletal</strong> — move and support</li></ul>",
+          "Chapter: Systems map. Nervous, endocrine, cardiovascular, respiratory, digestive, musculoskeletal overview."
+        ),
+        ch(
+          "Cell to organ",
+          "<h2>From cell to organ</h2><p>Cells specialize → tissues → organs → systems. Membranes control what enters/leaves. Energy (ATP) powers pumps, movement, and signals.</p>",
+          "Chapter: Cell to organ. Specialization hierarchy; membranes gate transport; ATP powers work."
+        ),
+        ch(
+          "Integration",
+          "<h2>Integration</h2><p>Example: exercise raises oxygen demand → breathing and heart rate rise → muscles get more O₂ and fuel. Systems talk constantly.</p>" +
+            fin("Physiology 101 · core complete"),
+          "Chapter: Integration. Exercise example: O2 demand links respiratory, cardiovascular, muscle systems."
+        ),
+      ],
+    },
   };
 
   var TRACKS = [
@@ -907,13 +1154,13 @@
     },
     {
       id: "coding101",
-      label: "Coding 101",
-      blurb: "From codes to programs, variables, decisions, loops, functions, lists",
+      label: "Programming 101",
+      blurb: "Codes → programs, variables, strings, decisions, loops, functions, lists (8 books)",
     },
     {
       id: "college",
-      label: "College · basic courses",
-      blurb: "Algebra, stats, writing, history, sciences, psych, econ, speaking, thinking",
+      label: "College · 101 courses",
+      blurb: "History, music, religion, sciences, psych, business, writing, math, and more",
     },
   ];
 

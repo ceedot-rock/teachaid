@@ -23,8 +23,8 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 ## Contents
 
 - **Foundations**: Counting → Positive & Negative → How Computers Count  
-- **Coding 101** (8 books): Integers to Codes → Program → Variables → Strings → Decisions → Loops → Functions → Lists & Capstone  
-- **College gen-ed** (10 courses): Algebra, Statistics, English Comp, US History, Biology, Chemistry, Psychology, Microeconomics, Public Speaking, Critical Thinking  
+- **Programming 101** (8 books): Integers to Codes → Program → Variables → Strings → Decisions → Loops → Functions → Lists & Capstone  
+- **College 101s** (16+): Algebra, Stats, English, US History, World History, Biology, Physiology, Chemistry, Science, Psych, Econ, Music Theory, Music Business, Religion & Spirituality, Public Speaking, Critical Thinking  
 - **Curriculum tab**: **Create new** or **Add to existing** — upload `.txt` / `.md` / paste → Grok builds or appends chapters (on-device)  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  

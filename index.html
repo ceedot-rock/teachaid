@@ -3394,7 +3394,7 @@ try{loadStudentAccount();renderReferralUI();refreshSubmitPayUi()}catch(e){}
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=11');
+      return navigator.serviceWorker.register('./sw.js?v=27');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -3403,7 +3403,7 @@ try{loadStudentAccount();renderReferralUI();refreshSubmitPayUi()}catch(e){}
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=11').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=27').catch(function(){});
   }
 })();
 fillVoiceSelect();

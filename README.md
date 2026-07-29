@@ -14,6 +14,16 @@ npx serve .
 
 Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev` or deploy.
 
+## Tests
+
+Shared logic lives in `lib/` (grades, mastery certificates, curriculum parse). Run:
+
+```bash
+npm test
+```
+
+Covers: grade gates (70% pass min), grade trailer parsing, chapter unlock, mastery cert rules (**91%+ final pass**), curriculum JSON/sanitize, and the built-in catalog (Programming 101 + college 101s).
+
 ## Install as app
 
 1. Open the live URL on your phone or computer  
@@ -24,7 +34,8 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 
 - **Foundations**: Counting → Positive & Negative → How Computers Count  
 - **Programming 101** (8 books): Integers to Codes → Program → Variables → Strings → Decisions → Loops → Functions → Lists & Capstone  
-- **College 101s** (16+): Algebra, Stats, English, US History, World History, Biology, Physiology, Chemistry, Science, Psych, Econ, Music Theory, Music Business, Religion & Spirituality, Public Speaking, Critical Thinking  
+- **College 101s** (26+): gen-ed, **AI 101**, AI/Human Cohesion, Cybersecurity, Data & Digital Literacy, Finance, Networking, Art, Literature, Intro to Law, and more  
+- **Student Campus**: share comments, quiz/test/chapter scores (and mastery) with classmates via Share / share codes  
 - **Curriculum tab**: **Create new** or **Add to existing** — upload `.txt` / `.md` / paste → Grok builds or appends chapters (on-device)  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  

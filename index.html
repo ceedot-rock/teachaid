@@ -194,6 +194,23 @@ textarea{min-height:56px}
   .cert-actions,.cert-name-row{display:none!important}
 }
 
+/* Student campus */
+.campus-post{background:#14141f;border:1px solid #2a2a3c;border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.campus-post .who{font-size:.78rem;font-weight:650;color:#5eead4}
+.campus-post .when{font-size:.68rem;color:#6b7280;float:right}
+.campus-post .kind{display:inline-block;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:999px;margin:6px 0;background:rgba(147,197,253,.12);color:#93c5fd}
+.campus-post .kind.score{background:rgba(163,230,53,.12);color:#a3e635}
+.campus-post .kind.mastery{background:rgba(251,191,36,.15);color:#fbbf24}
+.campus-post .kind.comment{background:rgba(167,139,250,.12);color:#c4b5fd}
+.campus-post .body{font-size:.9rem;color:#d1d5db;margin:4px 0;white-space:pre-wrap}
+.campus-post .course{font-size:.75rem;color:#94a3b8}
+.campus-post .score-line{font-size:1.1rem;font-weight:800;color:#a3e635;margin:4px 0}
+.campus-compose textarea{min-height:72px}
+.campus-compose select{margin-bottom:8px}
+.share-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.share-row button{flex:1;min-width:90px;font-size:.72rem;padding:7px 8px;border-radius:8px;border:1px solid #2a2a3c;background:#1a1a28;color:#e8e8ed;cursor:pointer}
+.tabbar .tab{font-size:.58rem}
+
 </style>
 </head>
 <body>
@@ -211,6 +228,7 @@ textarea{min-height:56px}
     <a href="#" onclick="show('books');return false">Teachers</a>
     <a href="#" onclick="show('journal');return false">Journal</a>
     <a href="#" onclick="show('certs');return false">Certificates</a>
+    <a href="#" onclick="show('student');return false">Student</a>
     <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
     <a href="https://github.com/ceedot-rock/splabs-brand/blob/main/docs/SLID_PHI_STRIPE.md" target="_blank" rel="noopener">Pricing</a>
     <a href="#voice-pro" onclick="showVoicePro();return false">Voice</a>
@@ -361,6 +379,45 @@ textarea{min-height:56px}
 <div id="currCatalog"></div>
 </div>
 
+<div id="student" class="wrap hidden">
+<div class="topbar"><h2>Student Campus</h2></div>
+<p class="legal" style="text-align:left;margin:0 0 12px">Share comments, quiz scores, and test results with classmates. Posts stay on this device; use <strong>Share</strong> to send socially. TEACHAiD · SPLabs.</p>
+
+<div class="upload-card campus-compose">
+  <p class="label" style="margin-top:0">Your campus name</p>
+  <input type="text" id="campusName" placeholder="Display name" autocomplete="nickname" onchange="saveCampusName()"/>
+  <p class="label">Post type</p>
+  <select id="campusType">
+    <option value="comment">Comment</option>
+    <option value="quiz">Quiz score</option>
+    <option value="test">Test score</option>
+    <option value="grade">Chapter grade</option>
+  </select>
+  <p class="label">Course (optional)</p>
+  <select id="campusCourse"></select>
+  <p class="label">Score % (for quiz/test/grade)</p>
+  <input type="text" id="campusScore" placeholder="e.g. 92" inputmode="numeric"/>
+  <p class="label">Comment</p>
+  <textarea id="campusText" placeholder="How did it go? Tips for classmates?"></textarea>
+  <button type="button" class="btn" onclick="submitCampusPost()">Post to campus</button>
+  <p class="upload-status" id="campusStatus"></p>
+</div>
+
+<div class="mode-tabs" style="margin-bottom:10px">
+  <button type="button" class="on" id="campFilterAll" onclick="setCampusFilter('all')">All</button>
+  <button type="button" id="campFilterScores" onclick="setCampusFilter('scores')">Scores</button>
+  <button type="button" id="campFilterComments" onclick="setCampusFilter('comments')">Comments</button>
+</div>
+<div id="campusFeed"><p style="color:#71717a;font-size:.9rem">No posts yet — be the first.</p></div>
+
+<div class="upload-card" style="margin-top:14px">
+  <p class="label" style="margin-top:0">Import a shared post</p>
+  <p class="hint">Paste a classmate’s TEACHAiD share code to add it to your feed.</p>
+  <textarea id="campusImport" placeholder="TEACHAiD_CAMPUS:..."></textarea>
+  <button type="button" class="btn secondary" onclick="importCampusShare()">Import</button>
+</div>
+</div>
+
 <div id="certs" class="wrap hidden">
 <div class="topbar"><h2>Certificates</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">A <strong>Certificate of Course Mastery</strong> is issued when your certified teacher passes you on the <strong>final chapter</strong> with a score of <strong>91% or higher</strong>. TEACHAiD · SPLabs.</p>
@@ -407,15 +464,18 @@ textarea{min-height:56px}
 <nav class="tabbar">
 <button class="tab on" id="tabHome" onclick="show('home')"><span>🏠</span>Home</button>
 <button class="tab" id="tabCurriculum" onclick="show('curriculum')"><span>📚</span>Curriculum</button>
+<button class="tab" id="tabStudent" onclick="show('student')"><span>👥</span>Student</button>
 <button class="tab" id="tabJournal" onclick="show('journal')"><span>📓</span>Journal</button>
 <button class="tab" id="tabBooks" onclick="show('books')"><span>👩‍🏫</span>Teachers</button>
 </nav>
 
 <script src="builtin-books.js"></script>
+<script src="lib/mastery.js"></script>
 <script>
-/* BUILTIN_BOOKS + BUILTIN_TRACKS from builtin-books.js */
+/* BUILTIN_BOOKS + BUILTIN_TRACKS from builtin-books.js; TeachaidMastery from lib/mastery.js */
 if(typeof BUILTIN_BOOKS==='undefined'){var BUILTIN_BOOKS={};}
 if(typeof BUILTIN_TRACKS==='undefined'){var BUILTIN_TRACKS=[];}
+var TM=typeof TeachaidMastery!=='undefined'?TeachaidMastery:{MASTERY_MIN:91};
 
 var CUSTOM_KEY='teachaid_custom_books_v1';
 var BOOKS={};
@@ -859,8 +919,8 @@ function isUnlocked(idx){
   if(!cur)return false;
   return idx<=getProgress(cur).unlockedThrough;
 }
-/** Mastery certificate threshold — teacher pass + score on final chapter */
-var MASTERY_MIN=91;
+/** Mastery certificate threshold — shared with lib/mastery.js (tested) */
+var MASTERY_MIN=TM.MASTERY_MIN||91;
 var CERT_KEY='teachaid_certs_v1';
 var LEARNER_KEY='teachaid_learner_name_v1';
 var viewingCertId=null;
@@ -913,54 +973,57 @@ function applyGrade(grade){
       maybeIssueMasteryCert(grade);
     }else{
       document.getElementById('lockBanner').textContent='Course complete — mastery certificate needs '+MASTERY_MIN+'+% (you scored '+grade.score+'%). Try Am I ready? again when sharper.';
+      shareGradeToCampus(grade,'test');
     }
   }else if(!grade.pass && last && Number(grade.score)>=MASTERY_MIN){
     // high score but teacher did not pass — rare
     document.getElementById('lockBanner').textContent='Strong score — ask your teacher for a clear pass check to earn the certificate.';
+  }else if(grade.pass && !last && Number(grade.score)>=0){
+    // chapter pass — soft share as grade
+    try{shareGradeToCampus(grade,'grade')}catch(e){}
   }
 }
 
 function maybeIssueMasteryCert(grade){
   if(!cur||!BOOKS[cur])return null;
-  if(!grade||grade.pass!==true)return null;
-  var score=Number(grade.score)||0;
-  if(score<MASTERY_MIN)return null;
   var b=BOOKS[cur];
-  if(chi<b.ch.length-1)return null; // final chapter only
+  var can=TM.shouldIssueMasteryCert
+    ? TM.shouldIssueMasteryCert({grade:grade,chapterIndex:chi,chapterCount:b.ch.length})
+    : (grade&&grade.pass&&Number(grade.score)>=MASTERY_MIN&&chi>=b.ch.length-1);
+  if(!can)return null;
+
+  var cert=TM.buildMasteryCert
+    ? TM.buildMasteryCert({
+        grade:grade,
+        chapterIndex:chi,
+        chapterCount:b.ch.length,
+        bookId:cur,
+        courseTitle:b.title,
+        teacher:b.teacher,
+        chapterName:b.ch[chi]?b.ch[chi].n:'Final',
+        learnerName:getLearnerName()||'Learner'
+      })
+    : null;
+  if(!cert)return null;
 
   var list=loadCerts();
-  // upgrade existing cert for same book if higher score
-  var existing=null, idx=-1;
-  for(var i=0;i<list.length;i++){
-    if(list[i].bookId===cur){existing=list[i];idx=i;break}
-  }
-  if(existing && existing.score>=score){
-    // already have equal or better
-    openCertModal(existing.id);
-    renderCertsUI();
-    return existing;
-  }
-
-  var cert={
-    id:'cert_'+cur+'_'+Date.now().toString(36),
-    bookId:cur,
-    courseTitle:b.title,
-    teacher:b.teacher,
-    score:score,
-    chapterName:b.ch[chi]?b.ch[chi].n:'Final',
-    learnerName:getLearnerName()||'Learner',
-    issuedAt:new Date().toISOString(),
-    kind:'course_mastery',
-    threshold:MASTERY_MIN
-  };
-  if(idx>=0)list[idx]=cert;else list.unshift(cert);
-  saveCerts(list);
+  var merged=TM.mergeCertIntoList?TM.mergeCertIntoList(list,cert):{list:list.concat([cert]),cert:cert,action:'issued'};
+  saveCerts(merged.list);
   renderCertsUI();
-  openCertModal(cert.id);
+  if(merged.action==='kept'){
+    openCertModal(merged.cert.id);
+    return merged.cert;
+  }
+  openCertModal(merged.cert.id);
   try{
-    addBubble('bot','🏅 Certificate of Course Mastery issued for “'+b.title+'” at '+score+'%. Your teacher '+b.teacher+' certified you. View it under Certificates.',false);
+    addBubble('bot','🏅 Certificate of Course Mastery issued for “'+b.title+'” at '+merged.cert.score+'%. Your teacher '+b.teacher+' certified you. View it under Certificates — or share on Student Campus.',false);
   }catch(e){}
-  return cert;
+  try{
+    if(merged.action==='issued'||merged.action==='upgraded'){
+      shareGradeToCampus({score:merged.cert.score,pass:true},'mastery');
+    }
+  }catch(e){}
+  return merged.cert;
 }
 
 function openCertModal(certId){
@@ -1003,6 +1066,223 @@ function updateCertNameFromModal(){
   }
 }
 function printCertificate(){window.print()}
+
+/* —— Student Campus (social comments & scores) —— */
+var CAMPUS_KEY='teachaid_campus_v1';
+var CAMPUS_NAME_KEY='teachaid_campus_name_v1';
+var campusFilter='all';
+
+function loadCampusPosts(){
+  try{return JSON.parse(localStorage.getItem(CAMPUS_KEY)||'[]')}catch(e){return[]}
+}
+function saveCampusPosts(list){
+  localStorage.setItem(CAMPUS_KEY,JSON.stringify(list.slice(0,200)));
+}
+function getCampusName(){
+  return (localStorage.getItem(CAMPUS_NAME_KEY)||getLearnerName()||'').trim()||'Student';
+}
+function saveCampusName(){
+  var el=document.getElementById('campusName');
+  var n=(el&&el.value||'').trim().slice(0,40);
+  localStorage.setItem(CAMPUS_NAME_KEY,n);
+}
+function fillCampusCourseSelect(){
+  var sel=document.getElementById('campusCourse');
+  if(!sel)return;
+  var opts=['<option value="">— General —</option>'];
+  Object.keys(BOOKS).forEach(function(id){
+    var b=BOOKS[id];
+    if(!b)return;
+    opts.push('<option value="'+esc(id)+'">'+esc(b.title)+'</option>');
+  });
+  sel.innerHTML=opts.join('');
+}
+function setCampusFilter(f){
+  campusFilter=f||'all';
+  var a=document.getElementById('campFilterAll');
+  var s=document.getElementById('campFilterScores');
+  var c=document.getElementById('campFilterComments');
+  if(a)a.className=campusFilter==='all'?'on':'';
+  if(s)s.className=campusFilter==='scores'?'on':'';
+  if(c)c.className=campusFilter==='comments'?'on':'';
+  renderCampusFeed();
+}
+function kindLabel(k){
+  if(k==='quiz')return'Quiz score';
+  if(k==='test')return'Test score';
+  if(k==='grade')return'Chapter grade';
+  if(k==='mastery')return'Course mastery';
+  return'Comment';
+}
+function kindClass(k){
+  if(k==='mastery')return'kind mastery';
+  if(k==='quiz'||k==='test'||k==='grade')return'kind score';
+  return'kind comment';
+}
+function postShareText(p){
+  var lines=['TEACHAiD Campus','@'+(p.author||'Student')];
+  lines.push(kindLabel(p.type)+(p.courseTitle?(' · '+p.courseTitle):''));
+  if(p.score!=null&&p.score!=='')lines.push('Score: '+p.score+'%');
+  if(p.text)lines.push(p.text);
+  lines.push('— TEACHAiD · SPLabs');
+  return lines.join('\n');
+}
+function postShareCode(p){
+  try{
+    return 'TEACHAiD_CAMPUS:'+btoa(unescape(encodeURIComponent(JSON.stringify({
+      v:1,type:p.type,author:p.author,courseTitle:p.courseTitle,bookId:p.bookId,
+      score:p.score,text:p.text,chapterName:p.chapterName,at:p.at
+    }))));
+  }catch(e){return postShareText(p)}
+}
+function addCampusPost(partial,opts){
+  opts=opts||{};
+  var post={
+    id:'p_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    type:partial.type||'comment',
+    author:(partial.author||getCampusName()).slice(0,40),
+    courseTitle:(partial.courseTitle||'').slice(0,120),
+    bookId:partial.bookId||'',
+    score:partial.score==null||partial.score===''?null:Math.max(0,Math.min(100,parseInt(partial.score,10)||0)),
+    text:String(partial.text||'').slice(0,800),
+    chapterName:(partial.chapterName||'').slice(0,80),
+    at:partial.at||new Date().toISOString(),
+    mine:partial.mine!==false
+  };
+  if(post.type==='comment'&&!post.text)return null;
+  if((post.type==='quiz'||post.type==='test'||post.type==='grade')&&post.score==null&&!post.text)return null;
+  var list=loadCampusPosts();
+  list.unshift(post);
+  saveCampusPosts(list);
+  renderCampusFeed();
+  if(opts.openStudent)show('student');
+  return post;
+}
+function submitCampusPost(){
+  var type=(document.getElementById('campusType').value||'comment');
+  var bookId=(document.getElementById('campusCourse').value||'');
+  var scoreRaw=(document.getElementById('campusScore').value||'').trim();
+  var text=(document.getElementById('campusText').value||'').trim();
+  var courseTitle='';
+  if(bookId&&BOOKS[bookId])courseTitle=BOOKS[bookId].title;
+  var st=document.getElementById('campusStatus');
+  var post=addCampusPost({
+    type:type,
+    author:getCampusName(),
+    bookId:bookId,
+    courseTitle:courseTitle,
+    score:scoreRaw===''?null:scoreRaw,
+    text:text,
+    mine:true
+  });
+  if(!post){
+    if(st){st.textContent='Add a comment and/or a score.';st.className='upload-status err'}
+    return;
+  }
+  document.getElementById('campusText').value='';
+  document.getElementById('campusScore').value='';
+  if(st){st.textContent='Posted.';st.className='upload-status ok'}
+}
+function shareCampusPost(id){
+  var list=loadCampusPosts();
+  var p=null;
+  for(var i=0;i<list.length;i++)if(list[i].id===id){p=list[i];break}
+  if(!p)return;
+  var text=postShareText(p)+'\n\nShare code:\n'+postShareCode(p);
+  if(navigator.share){
+    navigator.share({title:'TEACHAiD · '+kindLabel(p.type),text:text}).catch(function(){copyCampusText(text)});
+  }else copyCampusText(text);
+}
+function copyCampusText(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      var st=document.getElementById('campusStatus');
+      if(st){st.textContent='Copied share text + code.';st.className='upload-status ok'}
+    }).catch(function(){prompt('Copy share:',text)});
+  }else prompt('Copy share:',text);
+}
+function importCampusShare(){
+  var raw=(document.getElementById('campusImport').value||'').trim();
+  var st=document.getElementById('campusStatus');
+  if(!raw){if(st){st.textContent='Paste a share code first.';st.className='upload-status err'}return}
+  try{
+    var m=raw.match(/TEACHAiD_CAMPUS:([A-Za-z0-9+/=]+)/);
+    var b64=m?m[1]:(raw.indexOf('TEACHAiD_CAMPUS:')===0?raw.slice(15):raw);
+    var json=decodeURIComponent(escape(atob(b64)));
+    var data=JSON.parse(json);
+    var post=addCampusPost({
+      type:data.type||'comment',
+      author:data.author||'Classmate',
+      courseTitle:data.courseTitle||'',
+      bookId:data.bookId||'',
+      score:data.score,
+      text:data.text||'',
+      chapterName:data.chapterName||'',
+      at:data.at||new Date().toISOString(),
+      mine:false
+    });
+    if(!post)throw new Error('empty');
+    document.getElementById('campusImport').value='';
+    if(st){st.textContent='Imported from classmate.';st.className='upload-status ok'}
+  }catch(e){
+    if(st){st.textContent='Could not import that code.';st.className='upload-status err'}
+  }
+}
+function deleteCampusPost(id){
+  if(!confirm('Remove this post from your campus feed?'))return;
+  saveCampusPosts(loadCampusPosts().filter(function(p){return p.id!==id}));
+  renderCampusFeed();
+}
+function renderCampusFeed(){
+  var el=document.getElementById('campusFeed');
+  if(!el)return;
+  var nameEl=document.getElementById('campusName');
+  if(nameEl&&!nameEl.value)nameEl.value=getCampusName()==='Student'?'':getCampusName();
+  fillCampusCourseSelect();
+  var list=loadCampusPosts();
+  if(campusFilter==='scores')list=list.filter(function(p){return p.type==='quiz'||p.type==='test'||p.type==='grade'||p.type==='mastery'});
+  if(campusFilter==='comments')list=list.filter(function(p){return p.type==='comment'});
+  if(!list.length){
+    el.innerHTML='<p style="color:#71717a;font-size:.9rem">No posts yet — share a score or comment.</p>';
+    return;
+  }
+  el.innerHTML=list.map(function(p){
+    var d=new Date(p.at);
+    var ds=isNaN(d.getTime())?'':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    var scoreHtml=p.score!=null?'<div class="score-line">'+p.score+'%</div>':'';
+    var courseHtml=p.courseTitle?'<div class="course">'+esc(p.courseTitle)+(p.chapterName?(' · '+esc(p.chapterName)):'')+'</div>':'';
+    var del=p.mine?'<button type="button" onclick="deleteCampusPost(\''+p.id+'\')">Delete</button>':'';
+    return '<div class="campus-post">'+
+      '<span class="when">'+esc(ds)+'</span>'+
+      '<div class="who">'+esc(p.author||'Student')+(p.mine?' · you':'')+'</div>'+
+      '<span class="'+kindClass(p.type)+'">'+esc(kindLabel(p.type))+'</span>'+
+      courseHtml+scoreHtml+
+      (p.text?'<div class="body">'+esc(p.text)+'</div>':'')+
+      '<div class="share-row"><button type="button" onclick="shareCampusPost(\''+p.id+'\')">Share</button>'+del+'</div>'+
+      '</div>';
+  }).join('');
+}
+function shareGradeToCampus(grade,kind){
+  if(!cur||!BOOKS[cur]||!grade)return;
+  var b=BOOKS[cur];
+  var score=Number(grade.score);
+  if(!Number.isFinite(score))return;
+  var type=kind||'grade';
+  var text='';
+  if(type==='mastery')text='Earned Certificate of Course Mastery with '+b.teacher+'.';
+  else if(grade.pass)text='Passed “'+(b.ch[chi]?b.ch[chi].n:'chapter')+'” with teacher '+b.teacher+'.';
+  else text='Practicing “'+(b.ch[chi]?b.ch[chi].n:'chapter')+'” with '+b.teacher+'.';
+  addCampusPost({
+    type:type,
+    author:getCampusName(),
+    bookId:cur,
+    courseTitle:b.title,
+    chapterName:b.ch[chi]?b.ch[chi].n:'',
+    score:score,
+    text:text,
+    mine:true
+  });
+}
 
 function renderCertsUI(){
   loadLearnerNameIntoUi();
@@ -1081,7 +1361,7 @@ function setPace(p){
   document.getElementById('paceFast').className=p==='fast'?'on':'';
 }
 function show(which){
-  ['home','reader','journal','books','curriculum','certs'].forEach(function(id){
+  ['home','reader','journal','books','curriculum','certs','student'].forEach(function(id){
     var el=document.getElementById(id);
     if(!el)return;
     if(id===which)el.classList.remove('hidden');else el.classList.add('hidden');
@@ -1089,11 +1369,14 @@ function show(which){
   document.getElementById('tabHome').className='tab'+(which==='home'?' on':'');
   var tabC=document.getElementById('tabCurriculum');
   if(tabC)tabC.className='tab'+(which==='curriculum'?' on':'');
+  var tabS=document.getElementById('tabStudent');
+  if(tabS)tabS.className='tab'+(which==='student'?' on':'');
   document.getElementById('tabJournal').className='tab'+(which==='journal'?' on':'');
   document.getElementById('tabBooks').className='tab'+(which==='books'?' on':'');
   if(which==='reader'||which==='certs'){
     document.getElementById('tabHome').className='tab';
     if(tabC)tabC.className='tab';
+    if(tabS)tabS.className='tab';
     document.getElementById('tabJournal').className='tab';
     document.getElementById('tabBooks').className='tab';
   }
@@ -1103,6 +1386,7 @@ function show(which){
     setCurrMode(currMode||'create');
   }
   if(which==='certs'||which==='home')renderCertsUI();
+  if(which==='student')renderCampusFeed();
   window.scrollTo(0,0);
 }
 function goHome(){show('home');cur=null}
@@ -1713,7 +1997,7 @@ renderCertsUI();
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v16';
+  var VER='v18';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

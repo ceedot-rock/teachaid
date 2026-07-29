@@ -21,6 +21,8 @@
  *   grade?: { score, grasp[], needsReview[], pass, passChapterIndex, critique }
  * }
  */
+const { splitGrade } = require("../lib/grade");
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -185,47 +187,6 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
   }
 };
 
-function splitGrade(raw, chapterIndex) {
-  const marker = "---TEACHAID_GRADE---";
-  const idx = raw.lastIndexOf(marker);
-  let reply = raw;
-  let grade = null;
-  if (idx >= 0) {
-    reply = raw.slice(0, idx).trim();
-    const jsonPart = raw.slice(idx + marker.length).trim();
-    try {
-      const g = JSON.parse(jsonPart);
-      grade = normalizeGrade(g, chapterIndex);
-    } catch {
-      // try to find JSON object
-      const m = jsonPart.match(/\{[\s\S]*\}/);
-      if (m) {
-        try {
-          grade = normalizeGrade(JSON.parse(m[0]), chapterIndex);
-        } catch {
-          grade = null;
-        }
-      }
-    }
-  }
-  if (!reply) reply = "Let's keep working on this chapter.";
-  return { reply, grade };
-}
-
-function normalizeGrade(g, chapterIndex) {
-  if (!g || typeof g !== "object") return null;
-  const score = Math.max(0, Math.min(100, parseInt(g.score, 10) || 0));
-  const grasp = Array.isArray(g.grasp)
-    ? g.grasp.map((x) => String(x).slice(0, 160)).slice(0, 6)
-    : [];
-  const needsReview = Array.isArray(g.needsReview)
-    ? g.needsReview.map((x) => String(x).slice(0, 160)).slice(0, 6)
-    : [];
-  let pass = g.pass === true || g.pass === "true";
-  // Hard gate: high bar
-  if (pass && score < 70) pass = false;
-  if (pass && needsReview.length > 2) pass = false;
-  const passChapterIndex = pass ? chapterIndex : null;
-  const critique = String(g.critique || "").slice(0, 400);
-  return { score, grasp, needsReview, pass, passChapterIndex, critique };
-}
+// re-export for tests / tooling
+module.exports.splitGrade = splitGrade;
+module.exports.normalizeGrade = require("../lib/grade").normalizeGrade;

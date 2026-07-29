@@ -193,12 +193,7 @@ textarea{min-height:56px}
 <p class="label">Your books</p>
 <div class="custom-list" id="customBooksHome"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — open Curriculum to load a document.</p></div>
 
-<p class="label">Start here</p>
-<div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">Teacher Mira</div></div>
-<div class="card" onclick="openBook('s2')"><span class="tag">BOOK 02</span><h3>Positive &amp; Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">Teacher Nova</div></div>
-<div class="card" onclick="openBook('s3')"><span class="tag">BOOK 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">Teacher Bit</div></div>
-<p class="label">Next level</p>
-<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(147,197,253,.12);color:#93c5fd">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">Teacher Codex</div></div>
+<div id="homeCatalog"></div>
 
 <div class="j-card" id="voiceProCard" style="display:none">
   <p class="label" style="margin-top:0">Voice tiers · TEACHAiD / SPLabs</p>
@@ -276,10 +271,7 @@ textarea{min-height:56px}
 <div class="j-card">
 <label>Book</label>
 <select id="jBook">
-<option>Start 01 · Counting</option>
-<option>Start 02 · Positive & Negative</option>
-<option>Start 03 · Computers</option>
-<option>Computing · Integers</option>
+<option>Counting</option>
 <option>Other</option>
 </select>
 <label>What I understand</label>
@@ -325,21 +317,14 @@ textarea{min-height:56px}
 <p class="label">Your curricula</p>
 <div class="custom-list" id="customBooksCurr"><p style="color:#71717a;font-size:.85rem">None yet — create one above.</p></div>
 
-<p class="label">Starter library</p>
-<div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>Built-in · Teacher Mira</p></div>
-<div class="card" onclick="openBook('s2')"><span class="tag">BOOK 02</span><h3>Positive &amp; Negative</h3><p>Built-in · Teacher Nova</p></div>
-<div class="card" onclick="openBook('s3')"><span class="tag">BOOK 03</span><h3>How Computers Count</h3><p>Built-in · Teacher Bit</p></div>
-<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(147,197,253,.12);color:#93c5fd">COMPUTING</span><h3>Integers to Codes</h3><p>Built-in · Teacher Codex</p></div>
+<div id="currCatalog"></div>
 </div>
 
 <div id="books" class="wrap hidden">
 <div class="topbar"><h2>Teachers</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Each textbook has its own tutor. They teach that book only, notice what you are getting, and unlock the next chapter when you are ready. TEACHAiD · SPLabs.</p>
 <div id="customTeachersList"></div>
-<div class="card" onclick="openBook('s1')"><h3>Mira · Counting</h3><p>Patient counting &amp; zero</p></div>
-<div class="card" onclick="openBook('s2')"><h3>Nova · Positive &amp; Negative</h3><p>Number line coach</p></div>
-<div class="card" onclick="openBook('s3')"><h3>Bit · How Computers Count</h3><p>Bits &amp; patterns</p></div>
-<div class="card" onclick="openBook('c1')"><h3>Codex · Integers to Codes</h3><p>Mapping &amp; codes</p></div>
+<div id="teachersCatalog"></div>
 </div>
 
 <nav class="tabbar">
@@ -349,78 +334,11 @@ textarea{min-height:56px}
 <button class="tab" id="tabBooks" onclick="show('books')"><span>👩‍🏫</span>Teachers</button>
 </nav>
 
+<script src="builtin-books.js"></script>
 <script>
-/* Curriculum: html for UI + plain text for the book's teacher */
-var BUILTIN_BOOKS={
-s1:{
-  title:"Counting",
-  teacher:"Mira",
-  teacherBlurb:"Friendly tutor for Counting — walks the pages with you.",
-  avatar:"M",
-  ch:[
-    {n:"Hello",h:"<h2>Hello</h2><div class='meta'>No prior knowledge needed</div><p>This is the first book. We start with <strong>counting</strong>.</p><div class='callout teacher'><div class='callout-title'>Your book teacher · Mira</div>Mira is below when you want company — she teaches only this book.</div>",
-     t:"Chapter: Hello. This is the first book. Audience: complete beginners. Topic: counting. Encourage the learner. No prior knowledge needed."},
-    {n:"What is counting?",h:"<h2>What is counting?</h2><p>Counting matches things to names:</p><p style='text-align:center;font-size:1.5rem;letter-spacing:.2em;margin:12px 0'>🍎 🍎 🍎</p><p style='text-align:center;color:#a1a1aa'>one · two · three</p><div class='callout idea'><div class='callout-title'>Simple idea</div>Counting answers: How many?</div>",
-     t:"Chapter: What is counting? Counting matches things to number-names. Example: three apples → one, two, three. Core idea: counting answers 'How many?'"},
-    {n:"Numbers",h:"<h2>Numbers as names</h2><p>The number <strong>5</strong> is the name for any group of five things.</p><div class='widget'><div class='widget-title'>Make a number</div><input type='range' id='dr' min='0' max='12' value='3' oninput='updDots()'><div class='big' id='bn'>3</div><div class='dots' id='db'></div></div>",
-     t:"Chapter: Numbers as names. A number is a name for a size of group. Example: 5 names any group of five things (apples, stars, steps). Interactive idea: move a slider to build groups of dots."},
-    {n:"Zero",h:"<h2>Zero</h2><p>What if there are no apples? We still need a name.</p><p style='text-align:center;font-size:1.4rem;color:#f59e0b;margin:12px 0'><strong>0</strong> · zero</p><div class='callout idea'><div class='callout-title'>Important</div>Zero means none. It is a real number.</div>",
-     t:"Chapter: Zero. When there are no items, we still need a name: 0, zero. Zero means none. Zero is a real number, not 'nothing to ignore'."},
-    {n:"Game",h:"<h2>Game · How many?</h2><div class='widget'><div class='widget-title'>Get <strong>5 correct</strong> to finish</div><p style='text-align:center;color:#a1a1aa;font-size:.85rem'>Score: <strong id='gs' style='color:#a3ff12'>0</strong> / <span id='gNeed'>5</span> correct &nbsp;·&nbsp; tries: <span id='gt'>0</span></p><div class='items' id='gi'></div><div class='game-btns' id='gb'></div><div class='msg' id='gm'></div><div id='gDone' class='done-box hidden'><p>✓ Counting game complete!</p><button class='btn' onclick='finishBook()'>Finish book → Home</button><button class='btn secondary' style='margin-top:8px' onclick='gReset()'>Play again</button></div><button class='btn secondary' id='gSkip' style='margin-top:10px' onclick='gSkipGame()'>Skip game · finish book</button></div>",
-     t:"Chapter: Game — How many? Practice: count items and pick the correct number. Goal: 5 correct answers. Wrong answers show the right count. This checks understanding of counting and zero-friendly counts."}
-  ]
-},
-s2:{
-  title:"Positive & Negative",
-  teacher:"Nova",
-  teacherBlurb:"Number-line tutor — patient with positives and negatives.",
-  avatar:"N",
-  ch:[
-    {n:"Welcome",h:"<h2>Welcome</h2><p>You can count 0, 1, 2, 3… Now numbers can also go the other way: <strong>negative numbers</strong>.</p>",
-     t:"Chapter: Welcome. Learner already knows 0,1,2,3… Now introduce numbers that go the other way: negative numbers."},
-    {n:"Positive",h:"<h2>Positive numbers</h2><p style='text-align:center;color:#22c55e;letter-spacing:.12em;margin:12px 0'>1 · 2 · 3 · 4 · 5 · …</p><p>Amounts greater than zero.</p>",
-     t:"Chapter: Positive numbers. 1,2,3,4,5… are positive. They are amounts greater than zero."},
-    {n:"Number line",h:"<h2>The number line</h2><p>Zero in the middle. Positive right. Negative left.</p><div class='widget'><div class='widget-title'>Move</div><input type='range' id='lr' min='-8' max='8' value='2' oninput='updLine()'><div class='big' id='lb' style='color:#22c55e'>2</div></div>",
-     t:"Chapter: The number line. Zero in the middle. Positive numbers to the right. Negative numbers to the left. Interactive: move along the line."},
-    {n:"Negative",h:"<h2>Negative numbers</h2><ul><li>+3 = three steps right · −3 = three steps left</li><li>+5° above zero · −5° below</li><li>+2 dollars you have · −2 you owe</li></ul>",
-     t:"Chapter: Negative numbers. +3 means three steps right; −3 three steps left. Examples: temperature above/below zero; money you have vs money you owe."},
-    {n:"Check",h:"<h2>Quick check</h2><div class='widget'><p style='margin-bottom:8px'>Which is a negative number?</p><button class='btn secondary' style='margin-bottom:8px' onclick='this.style.borderColor=\"#ef4444\"'>7</button><button class='btn secondary' style='margin-bottom:8px' onclick='this.style.borderColor=\"#22c55e\";this.textContent=\"−4 ✓\"'>−4</button><button class='btn secondary' onclick='this.style.borderColor=\"#ef4444\"'>0</button><div class='done-box' style='margin-top:14px'><p style='color:#a1a1aa;font-weight:600;margin-bottom:8px'>When ready:</p><button class='btn' onclick='finishBook()'>Finish book → Home</button></div></div>",
-     t:"Chapter: Quick check. Question: which is negative? Options 7, −4, 0. Correct answer is −4. Zero is not positive or negative."}
-  ]
-},
-s3:{
-  title:"How Computers Count",
-  teacher:"Bit",
-  teacherBlurb:"Bits tutor — makes on/off feel simple.",
-  avatar:"B",
-  ch:[
-    {n:"Welcome",h:"<h2>Welcome</h2><p>Computers count with only two states: <strong>off</strong> and <strong>on</strong>.</p>",
-     t:"Chapter: Welcome. Computers count with two states: off and on."},
-    {n:"Bits",h:"<h2>Bits</h2><p>One two-state piece is a <strong>bit</strong>.</p><ul><li><strong>0</strong> = off</li><li><strong>1</strong> = on</li></ul><div class='widget'><div class='widget-title'>Tap to flip</div><div class='bits' id='dbits'></div></div>",
-     t:"Chapter: Bits. A bit is one two-state piece. 0 means off. 1 means on. Learner can flip bits."},
-    {n:"Counting",h:"<h2>Counting with bits</h2><p style='font-family:ui-monospace,monospace;text-align:center;line-height:1.8;font-size:.9rem'>000 → 0 &nbsp; 001 → 1 &nbsp; 010 → 2<br>011 → 3 &nbsp; 100 → 4 &nbsp; 101 → 5</p><div class='callout idea'><div class='callout-title'>Key idea</div>Computers store patterns of bits. Those patterns are our numbers.</div>",
-     t:"Chapter: Counting with bits. Patterns: 000=0, 001=1, 010=2, 011=3, 100=4, 101=5. Key idea: computers store bit patterns; those patterns stand for numbers."},
-    {n:"Game",h:"<h2>Game · Make the number</h2><div class='widget'><div class='widget-title'>Match <strong>3 targets</strong> to finish</div><p style='text-align:center'>Target: <strong id='bt' style='color:#00ffd1;font-size:1.3rem'>5</strong> &nbsp;·&nbsp; won: <strong id='bw' style='color:#a3ff12'>0</strong>/3</p><div class='bits' id='gbits'></div><p style='text-align:center;color:#a1a1aa'>Current: <strong id='bv' style='color:#e4e4e7'>0</strong></p><div class='msg' id='bm'></div><div id='bDone' class='done-box hidden'><p>✓ Bits game complete!</p><button class='btn' onclick='finishBook()'>Finish path → Home</button><button class='btn secondary' style='margin-top:8px' onclick='bReset()'>Play again</button></div><button class='btn secondary' id='bSkip' style='margin-top:10px' onclick='bSkipGame()'>Skip game · finish</button></div><div class='callout try'><div class='callout-title'>Beginner path</div>After this game, open Computing from Home, or ask Bit about the next idea.</div>",
-     t:"Chapter: Game — Make the number. Flip 4 bits (values 8,4,2,1) to match a target number. Goal: 3 successful matches. Practices binary place values."}
-  ]
-},
-c1:{
-  title:"Integers to Codes",
-  teacher:"Codex",
-  teacherBlurb:"Integers & codes tutor — maps ideas step by step.",
-  avatar:"C",
-  ch:[
-    {n:"Welcome",h:"<h2>From Integers to Codes</h2><p>Most codes speak <strong>positive integers</strong>. This book shows why and how we map any integer to a positive one.</p>",
-     t:"Chapter: Welcome. Most codes use positive integers. This book shows why and how to map any integer to a positive one."},
-    {n:"Integers",h:"<h2>Integers</h2><p>Whole numbers: … −2, −1, 0, 1, 2 …</p><p>Positive > 0. Negative < 0. Zero is neither.</p>",
-     t:"Chapter: Integers. Whole numbers … −2,−1,0,1,2… Positive greater than 0. Negative less than 0. Zero is neither."},
-    {n:"Mapping",h:"<h2>Map any integer → positive</h2><p style='font-family:ui-monospace,monospace;text-align:center;margin:12px 0'>n > 0 → 2n<br>n ≤ 0 → −2n + 1</p><div class='widget'><div class='widget-title'>Try</div><input type='range' id='mr' min='-8' max='8' value='-3' oninput='updMap()'><p style='text-align:center;margin-top:8px' id='mo'></p></div>",
-     t:"Chapter: Map any integer to a positive integer. Rule: if n>0 then map=2n; if n≤0 then map=−2n+1. Interactive: try different n."},
-    {n:"Why",h:"<h2>Why it matters</h2><p>Data becomes sequences of positive integers, then those integers are encoded.</p><div class='callout idea'><div class='callout-title'>Pattern</div>Transform → positive integers → integer code.</div><div class='done-box'><button class='btn' onclick='finishBook()'>Finish book → Home</button></div>",
-     t:"Chapter: Why it matters. Pipeline: transform data → positive integers → encode those integers. Pattern: Transform → positive integers → integer code."}
-  ]
-}
-};
+/* BUILTIN_BOOKS + BUILTIN_TRACKS from builtin-books.js */
+if(typeof BUILTIN_BOOKS==='undefined'){var BUILTIN_BOOKS={};}
+if(typeof BUILTIN_TRACKS==='undefined'){var BUILTIN_TRACKS=[];}
 
 var CUSTOM_KEY='teachaid_custom_books_v1';
 var BOOKS={};
@@ -441,6 +359,53 @@ function mergeBooks(){
   });
 }
 mergeBooks();
+
+function booksInTrack(trackId){
+  return Object.keys(BUILTIN_BOOKS)
+    .filter(function(id){return BUILTIN_BOOKS[id].track===trackId})
+    .sort(function(a,b){return (BUILTIN_BOOKS[a].order||0)-(BUILTIN_BOOKS[b].order||0)});
+}
+
+function builtinCardHtml(id,opts){
+  opts=opts||{};
+  var b=BUILTIN_BOOKS[id];
+  if(!b)return'';
+  var style=b.tagStyle?' style="'+b.tagStyle+'"':'';
+  var tag=b.tag||'BOOK';
+  var sub=opts.teacherLine
+    ? '<p>'+esc(b.teacherBlurb||b.card||'')+'</p>'
+    : '<p>'+esc(b.card||'')+'</p><div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>';
+  if(opts.currLine){
+    sub='<p>Built-in · Teacher '+esc(b.teacher)+' · '+(b.ch?b.ch.length:0)+' ch</p>';
+  }
+  if(opts.teachersOnly){
+    return '<div class="card" onclick="openBook(\''+id+'\')"><h3>'+esc(b.teacher)+' · '+esc(b.title)+'</h3><p>'+esc(b.teacherBlurb||'')+'</p></div>';
+  }
+  return '<div class="card" onclick="openBook(\''+id+'\')"><span class="tag"'+style+'>'+esc(tag)+'</span><h3>'+esc(b.title)+'</h3>'+sub+'</div>';
+}
+
+function renderBuiltinCatalog(){
+  var tracks=BUILTIN_TRACKS||[];
+  function sectionHtml(mode){
+    return tracks.map(function(tr){
+      var ids=booksInTrack(tr.id);
+      if(!ids.length)return'';
+      var cards=ids.map(function(id){
+        if(mode==='teachers')return builtinCardHtml(id,{teachersOnly:true});
+        if(mode==='curr')return builtinCardHtml(id,{currLine:true});
+        return builtinCardHtml(id,{});
+      }).join('');
+      var blurb=tr.blurb?'<p style="font-size:.75rem;color:#6b7280;margin:-4px 0 8px">'+esc(tr.blurb)+'</p>':'';
+      return '<p class="label">'+esc(tr.label)+'</p>'+blurb+cards;
+    }).join('');
+  }
+  var home=document.getElementById('homeCatalog');
+  var curr=document.getElementById('currCatalog');
+  var teach=document.getElementById('teachersCatalog');
+  if(home)home.innerHTML=sectionHtml('home');
+  if(curr)curr.innerHTML='<p class="label">Built-in library</p>'+sectionHtml('curr');
+  if(teach)teach.innerHTML=sectionHtml('teachers');
+}
 
 function newCustomId(){
   return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -751,16 +716,17 @@ function renderCustomBooksUI(){
     }).join('');
   }
   fillAppendTargetSelect();
-  // Journal book options
+  // Journal book options — all built-ins + custom
   var jBook=document.getElementById('jBook');
   if(jBook){
-    var base=[
-      'Start 01 · Counting',
-      'Start 02 · Positive & Negative',
-      'Start 03 · Computers',
-      'Computing · Integers',
-      'Other'
-    ];
+    var base=[];
+    (BUILTIN_TRACKS||[]).forEach(function(tr){
+      booksInTrack(tr.id).forEach(function(id){
+        var b=BUILTIN_BOOKS[id];
+        base.push(b.title);
+      });
+    });
+    base.push('Other');
     var extra=ids.map(function(id){return map[id].title+' (custom)'});
     var curVal=jBook.value;
     jBook.innerHTML=base.concat(extra).map(function(o){
@@ -1509,11 +1475,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 });
 
 renderCustomBooksUI();
+renderBuiltinCatalog();
 
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v13';
+  var VER='v14';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

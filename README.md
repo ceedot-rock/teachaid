@@ -22,11 +22,13 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 
 ## Contents
 
-- Beginner path: Counting → Positive & Negative → How Computers Count  
+- **Foundations**: Counting → Positive & Negative → How Computers Count  
+- **Coding 101** (8 books): Integers to Codes → Program → Variables → Strings → Decisions → Loops → Functions → Lists & Capstone  
+- **College gen-ed** (10 courses): Algebra, Statistics, English Comp, US History, Biology, Chemistry, Psychology, Microeconomics, Public Speaking, Critical Thinking  
 - **Curriculum tab**: **Create new** or **Add to existing** — upload `.txt` / `.md` / paste → Grok builds or appends chapters (on-device)  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  
-- **Certified teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book only  
+- **Certified teacher per textbook** — grounded in that book only  
 - **Grades throughout**: score, grasping, needs review  
 - **Chapter lock**: only the certified teacher can pass you to the next chapter  
 - Explain / Continue / Pass check · pace · voice  

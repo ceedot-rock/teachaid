@@ -1,5 +1,5 @@
-/* teachaid-v6 — network-first so deploys show up; kill old caches */
-const CACHE = 'teachaid-v6';
+/* teachaid-v7 — network-first so deploys show up; kill old caches */
+const CACHE = 'teachaid-v7';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

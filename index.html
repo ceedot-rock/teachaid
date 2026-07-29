@@ -3,176 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#0b0b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="TEACHAiD — each textbook has its own AI teacher who reads the materials, explains at your pace, and answers questions.">
-<meta property="og:site_name" content="TEACHAiD">
-<meta property="og:title" content="TEACHAiD — your textbook teacher">
-<meta property="og:description" content="Every book comes with a teacher who knows that book, explains thoroughly, and answers questions.">
+<meta name="description" content="TEACHAiD is a licensed and trademarked entity of SPLabs. Textbook teachers who explain at your pace.">
+<meta property="og:site_name" content="TEACHAiD · SPLabs">
+<meta property="og:title" content="TEACHAiD — learn with your textbook teacher">
+<meta property="og:description" content="TEACHAiD is a licensed and trademarked entity of SPLabs. Certified teachers unlock chapters by mastery.">
 <meta property="og:image" content="https://raw.githubusercontent.com/ceedot-rock/splabs-brand/main/assets/splabs-og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/ceedot-rock/splabs-brand/main/assets/splabs-og.png">
 <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ceedot-rock/splabs-brand/main/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ceedot-rock/splabs-brand/main/assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>TEACHAiD</title>
+<title>TEACHAiD · SPLabs</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#0a0a0f;color:#e4e4e7;line-height:1.55;min-height:100vh;padding-bottom:72px}
-.wrap{max-width:480px;margin:0 auto;padding:16px}
-.logo{text-align:center;padding:24px 0 12px}
-.logo h1{font-size:1.7rem;font-weight:800;margin-top:10px;letter-spacing:.04em}
-.logo h1 span{color:#00ffd1}
-.logo p{color:#a1a1aa;font-size:.9rem;margin-top:4px}
-.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#71717a;font-weight:700;margin:18px 0 8px}
-.card{background:#12121a;border:1px solid #2a2a3a;border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
-.card:hover{border-color:#00ffd1}
-.tag{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px;background:rgba(34,197,94,.15);color:#22c55e}
-.card h3{font-size:1rem;margin-bottom:2px}
-.card p{font-size:.8rem;color:#a1a1aa}
-.teacher-pill{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.75rem;color:#60a5fa}
-.topbar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #2a2a3a;margin-bottom:12px;position:sticky;top:0;background:#0a0a0f;z-index:5}
-.topbar button{background:none;border:none;color:#00ffd1;font-size:1.25rem;cursor:pointer;padding:4px 8px}
-.topbar h2{font-size:1.05rem;flex:1}
-.pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;margin-bottom:8px}
-.pill{flex-shrink:0;background:#1a1a24;border:1px solid #2a2a3a;color:#a1a1aa;padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:600;cursor:pointer}
-.pill.on{background:rgba(0,255,209,.12);border-color:#00ffd1;color:#00ffd1}
-.pill.locked{opacity:.45;cursor:not-allowed;border-style:dashed}
-.pill.passed{border-color:rgba(34,197,94,.5);color:#86efac}
-.grade-box{background:#0a0f14;border:1px solid #2a2a3a;border-radius:12px;padding:10px 12px;margin:8px 0 10px;font-size:.82rem}
-.grade-box h4{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:#71717a;margin-bottom:6px}
-.grade-score{font-size:1.35rem;font-weight:800;color:#a3ff12}
-.grade-score.low{color:#f59e0b}.grade-score.fail{color:#f87171}
-.grade-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.grade-cols ul{margin:4px 0 0 1rem;color:#d4d4d8;font-size:.78rem}
-.grade-cols .g{color:#86efac}.grade-cols .r{color:#fca5a5}
-.lock-banner{font-size:.78rem;color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:8px 10px;margin:8px 0 0}
-.lesson h2{font-size:1.3rem;margin-bottom:4px}
-.lesson .meta{font-size:.75rem;color:#71717a;margin-bottom:12px}
-.lesson p{margin-bottom:10px;color:#d4d4d8;font-size:.95rem}
-.lesson ul{margin:6px 0 12px 1.2rem;color:#d4d4d8}
-.callout{border-radius:10px;padding:12px;margin:12px 0;border:1px solid;font-size:.88rem}
-.callout.idea{background:rgba(0,255,209,.06);border-color:rgba(0,255,209,.25)}
-.callout.try{background:rgba(163,255,18,.06);border-color:rgba(163,255,18,.25)}
-.callout.teacher{background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)}
-.callout-title{font-weight:700;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-.idea .callout-title{color:#00ffd1}.try .callout-title{color:#a3ff12}.teacher .callout-title{color:#60a5fa}
-.widget{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:14px;margin:12px 0}
-.widget-title{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#71717a;margin-bottom:10px}
-input[type=range]{width:100%;accent-color:#00ffd1}
-.big{font-size:2.2rem;font-weight:700;text-align:center;color:#a3ff12;padding:6px 0}
-.dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:30px}
-.dot{width:16px;height:16px;border-radius:50%;background:#00ffd1}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#0b0b12;color:#e8e8ed;line-height:1.5;min-height:100vh;padding-bottom:76px}
+.infobar{position:sticky;top:0;z-index:30;background:rgba(11,11,18,.94);backdrop-filter:blur(10px);border-bottom:1px solid #252536;padding:10px 14px 8px}
+.infobar-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.infobar img{width:36px;height:36px;border-radius:9px;object-fit:cover;flex-shrink:0}
+.infobar .brand{flex:1;min-width:0}
+.infobar .brand strong{display:block;font-size:.95rem;letter-spacing:.03em}
+.infobar .brand strong span{color:#5eead4}
+.infobar .brand em{display:block;font-style:normal;font-size:.68rem;color:#8b8b9a;margin-top:1px;line-height:1.3}
+.infobar-links{display:flex;flex-wrap:wrap;gap:10px 12px;max-width:480px;margin:6px auto 0;padding-left:48px}
+.infobar-links a{font-size:.72rem;color:#94a3b8;text-decoration:none}
+.infobar-links a:hover{color:#5eead4}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 8px}
+.label{font-size:.72rem;color:#7c7c8e;font-weight:600;margin:16px 0 8px}
+.card{background:#14141f;border:1px solid #2a2a3c;border-radius:14px;padding:14px 15px;margin-bottom:10px;cursor:pointer}
+.card:hover{border-color:#5eead4}
+.tag{display:inline-block;font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px;background:rgba(94,234,212,.12);color:#5eead4}
+.card h3{font-size:1rem;margin-bottom:3px;font-weight:650}
+.card p{font-size:.82rem;color:#9ca3af}
+.teacher-pill{margin-top:8px;font-size:.75rem;color:#93c5fd}
+.topbar{display:flex;align-items:center;gap:8px;padding:4px 0 12px}
+.topbar button{background:#1a1a28;border:1px solid #2a2a3c;color:#5eead4;font-size:.9rem;cursor:pointer;padding:6px 12px;border-radius:8px}
+.topbar h2{font-size:1.05rem;flex:1;font-weight:650}
+.pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px}
+.pill{flex-shrink:0;background:#1a1a28;border:1px solid #2a2a3c;color:#9ca3af;padding:5px 11px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer}
+.pill.on{background:rgba(94,234,212,.1);border-color:#5eead4;color:#5eead4}
+.pill.locked{opacity:.4;cursor:not-allowed;border-style:dashed}
+.pill.passed{border-color:rgba(52,211,153,.45);color:#6ee7b7}
+.lesson h2{font-size:1.25rem;margin-bottom:6px;font-weight:700}
+.lesson .meta{font-size:.75rem;color:#7c7c8e;margin-bottom:10px}
+.lesson p{margin-bottom:10px;color:#d1d5db;font-size:.95rem}
+.lesson ul{margin:6px 0 12px 1.15rem;color:#d1d5db}
+.callout{border-radius:12px;padding:12px;margin:12px 0;border:1px solid;font-size:.88rem}
+.callout.idea{background:rgba(94,234,212,.05);border-color:rgba(94,234,212,.2)}
+.callout.try{background:rgba(163,230,53,.05);border-color:rgba(163,230,53,.2)}
+.callout.teacher{background:rgba(147,197,253,.06);border-color:rgba(147,197,253,.22)}
+.callout-title{font-weight:650;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.idea .callout-title{color:#5eead4}.try .callout-title{color:#a3e635}.teacher .callout-title{color:#93c5fd}
+.widget{background:#14141f;border:1px solid #2a2a3c;border-radius:12px;padding:14px;margin:12px 0}
+.widget-title{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:#7c7c8e;margin-bottom:10px}
+input[type=range]{width:100%;accent-color:#5eead4}
+.big{font-size:2rem;font-weight:700;text-align:center;color:#a3e635;padding:6px 0}
+.dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:28px}
+.dot{width:15px;height:15px;border-radius:50%;background:#5eead4}
 .game-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
-.game-btns button{background:#1a1a24;border:1px solid #2a2a3a;color:#e4e4e7;padding:10px 16px;border-radius:10px;font-size:1rem;font-weight:700;min-width:48px;cursor:pointer}
-.game-btns button.ok{background:rgba(34,197,94,.2);border-color:#22c55e;color:#22c55e}
-.game-btns button.bad{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444}
-.items{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:50px;margin:10px 0;font-size:1.6rem}
-.msg{text-align:center;margin-top:8px;min-height:1.3rem;font-size:.95rem}
-.msg.ok{color:#22c55e}.msg.bad{color:#ef4444}
+.game-btns button{background:#1a1a28;border:1px solid #2a2a3c;color:#e8e8ed;padding:10px 16px;border-radius:10px;font-size:1rem;font-weight:700;min-width:48px;cursor:pointer}
+.game-btns button.ok{background:rgba(52,211,153,.15);border-color:#34d399;color:#6ee7b7}
+.game-btns button.bad{background:rgba(248,113,113,.12);border-color:#f87171;color:#fca5a5}
+.items{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:48px;margin:10px 0;font-size:1.55rem}
+.msg{text-align:center;margin-top:8px;min-height:1.25rem;font-size:.92rem}
+.msg.ok{color:#6ee7b7}.msg.bad{color:#fca5a5}
 .bits{display:flex;gap:8px;justify-content:center;margin:12px 0}
-.bit{width:44px;height:44px;display:grid;place-items:center;border-radius:8px;font-family:ui-monospace,monospace;font-weight:700;font-size:1.1rem;cursor:pointer}
-.bit.on{background:#00ffd1;color:#000}.bit.off{background:#27272a;color:#71717a}
-.nav-row{display:flex;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid #2a2a3a}
-.nav-row button{flex:1;background:#1a1a24;border:1px solid #2a2a3a;color:#e4e4e7;padding:12px;border-radius:10px;font-size:.9rem;cursor:pointer}
+.bit{width:42px;height:42px;display:grid;place-items:center;border-radius:8px;font-family:ui-monospace,monospace;font-weight:700;font-size:1.05rem;cursor:pointer}
+.bit.on{background:#5eead4;color:#0b0b12}.bit.off{background:#27273a;color:#6b7280}
+.nav-row{display:flex;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid #252536}
+.nav-row button{flex:1;background:#1a1a28;border:1px solid #2a2a3c;color:#e8e8ed;padding:12px;border-radius:10px;font-size:.9rem;cursor:pointer}
 .nav-row button:disabled{opacity:.35}
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:#12121a;border-top:1px solid #2a2a3a;display:flex;max-width:480px;margin:0 auto;padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
-.tab{flex:1;background:none;border:none;color:#71717a;font-size:.65rem;font-weight:600;padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
-.tab span{font-size:1.2rem}.tab.on{color:#00ffd1}
-.j-card{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:14px;margin-bottom:12px}
-label{display:block;font-size:.72rem;color:#71717a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-select,textarea,input[type=text]{width:100%;background:#0a0a0f;border:1px solid #2a2a3a;color:#e4e4e7;padding:10px;border-radius:8px;font-size:.9rem;font-family:inherit;margin-bottom:10px}
-textarea{min-height:60px}
-.btn{width:100%;background:#00ffd1;color:#000;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#12121c;border-top:1px solid #252536;display:flex;max-width:480px;margin:0 auto;padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+.tab{flex:1;background:none;border:none;color:#6b7280;font-size:.65rem;font-weight:600;padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab span{font-size:1.15rem}.tab.on{color:#5eead4}
+.j-card{background:#14141f;border:1px solid #2a2a3c;border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:.7rem;color:#7c7c8e;margin-bottom:4px}
+select,textarea,input[type=text]{width:100%;background:#0b0b12;border:1px solid #2a2a3c;color:#e8e8ed;padding:10px;border-radius:8px;font-size:.9rem;font-family:inherit;margin-bottom:10px}
+textarea{min-height:56px}
+.btn{width:100%;background:#5eead4;color:#0b0b12;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.btn.secondary{background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a}
-.btn.row{width:auto;flex:1;padding:10px 8px;font-size:.8rem}
-.entry{border-left:3px solid #00ffd1;padding:10px 12px;margin-bottom:10px;background:#1a1a24;border-radius:0 8px 8px 0;font-size:.88rem}
-.entry .m{font-size:.72rem;color:#71717a;margin-bottom:4px}
+.btn.secondary{background:#1a1a28;color:#e8e8ed;border:1px solid #2a2a3c}
+.btn.row{width:auto;flex:1;padding:9px 6px;font-size:.78rem}
+.entry{border-left:3px solid #5eead4;padding:10px 12px;margin-bottom:10px;background:#1a1a28;border-radius:0 8px 8px 0;font-size:.88rem}
+.entry .m{font-size:.7rem;color:#7c7c8e;margin-bottom:4px}
 .hidden{display:none!important}
-.teach-panel{background:#0d1520;border:1px solid rgba(96,165,250,.35);border-radius:14px;padding:12px;margin:14px 0 8px}
-.teach-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.teach-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#00ffd1);display:grid;place-items:center;font-size:1.1rem;font-weight:800;color:#0a0a0f}
+.teach-panel{background:#121820;border:1px solid #2a3548;border-radius:16px;padding:14px;margin:16px 0 8px}
+.teach-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.teach-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#5eead4);display:grid;place-items:center;font-size:1.05rem;font-weight:800;color:#0b0b12}
 .teach-head strong{display:block;font-size:.95rem}
-.teach-head span{font-size:.75rem;color:#a1a1aa}
-.pace{display:flex;gap:6px;margin:8px 0 10px}
-.pace button{flex:1;background:#1a1a24;border:1px solid #2a2a3a;color:#a1a1aa;padding:6px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer}
-.pace button.on{border-color:#00ffd1;color:#00ffd1;background:rgba(0,255,209,.1)}
-.act-row{display:flex;gap:8px;margin-bottom:8px}
-.chat-log{display:flex;flex-direction:column;gap:10px;min-height:120px;max-height:42vh;overflow-y:auto;padding:4px 0 8px}
-.bubble{max-width:94%;padding:10px 12px;border-radius:12px;font-size:.9rem;white-space:pre-wrap}
-.bubble.user{align-self:flex-end;background:rgba(0,255,209,.12);border:1px solid rgba(0,255,209,.35)}
-.bubble.bot{align-self:flex-start;background:#12121a;border:1px solid #2a2a3a}
-.bubble.err{align-self:stretch;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);color:#fca5a5;font-size:.85rem}
-.chat-row{display:flex;gap:8px;align-items:flex-end}
+.teach-head span{font-size:.72rem;color:#94a3b8}
+.grade-box{background:#0c1018;border:1px solid #243044;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:.8rem}
+.grade-top{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.grade-score{font-size:1.2rem;font-weight:800;color:#a3e635}
+.grade-score.low{color:#fbbf24}.grade-score.fail{color:#f87171}
+.grade-pass{font-size:.72rem;color:#94a3b8}
+#gradeCritique{color:#9ca3af;font-size:.8rem;margin:4px 0 6px}
+.grade-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grade-cols ul{margin:3px 0 0 1rem;color:#d1d5db;font-size:.74rem}
+.grade-cols .g{color:#6ee7b7;font-size:.72rem}.grade-cols .r{color:#fca5a5;font-size:.72rem}
+.lock-banner{font-size:.74rem;color:#cbd5e1;background:#1a2332;border-radius:8px;padding:7px 10px;margin-bottom:10px}
+.pace{display:flex;gap:6px;margin-bottom:8px}
+.pace button{flex:1;background:#1a1a28;border:1px solid #2a2a3c;color:#9ca3af;padding:6px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer}
+.pace button.on{border-color:#5eead4;color:#5eead4;background:rgba(94,234,212,.08)}
+.act-row{display:flex;gap:6px;margin-bottom:10px}
+.chat-log{display:flex;flex-direction:column;gap:8px;min-height:100px;max-height:38vh;overflow-y:auto;padding:2px 0 8px}
+.bubble{max-width:92%;padding:10px 12px;border-radius:14px;font-size:.9rem;white-space:pre-wrap;line-height:1.45}
+.bubble.user{align-self:flex-end;background:rgba(94,234,212,.1);border:1px solid rgba(94,234,212,.25)}
+.bubble.bot{align-self:flex-start;background:#1a1a28;border:1px solid #2a2a3c}
+.bubble.err{align-self:stretch;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:#fca5a5;font-size:.84rem}
+.chat-row{display:flex;gap:6px;align-items:flex-end}
 .chat-row input[type=text]{flex:1;margin-bottom:0}
-.icon-btn{flex-shrink:0;width:44px;height:44px;border-radius:12px;border:1px solid #2a2a3a;background:#1a1a24;color:#e4e4e7;font-size:1.15rem;cursor:pointer}
-.icon-btn.on{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.12)}
-.icon-btn.speak-on{border-color:#00ffd1;color:#00ffd1}
-.voice-hint{font-size:.72rem;color:#71717a;margin:6px 0 0;text-align:center}
-.done-box{text-align:center;margin-top:12px;padding:12px;border-radius:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35)}
-.done-box p{color:#22c55e;font-weight:700;margin-bottom:10px}
+.icon-btn{flex-shrink:0;width:42px;height:42px;border-radius:11px;border:1px solid #2a2a3c;background:#1a1a28;color:#e8e8ed;font-size:1.1rem;cursor:pointer}
+.icon-btn.on{border-color:#f87171;color:#f87171}
+.icon-btn.speak-on{border-color:#5eead4;color:#5eead4}
+.voice-hint{font-size:.7rem;color:#6b7280;margin:8px 0 0;text-align:center}
+.done-box{text-align:center;margin-top:12px;padding:12px;border-radius:12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3)}
+.done-box p{color:#6ee7b7;font-weight:700;margin-bottom:10px}
+.legal{text-align:center;font-size:.68rem;color:#6b7280;margin:18px 8px 8px;line-height:1.4}
+.legal a{color:#94a3b8}
 </style>
 </head>
 <body>
+<header class="infobar">
+  <div class="infobar-inner">
+    <img src="https://raw.githubusercontent.com/ceedot-rock/splabs-brand/main/assets/favicon-32.png" width="36" height="36" alt="SPLabs"/>
+    <div class="brand">
+      <strong>TEACH<span>AiD</span></strong>
+      <em>Licensed &amp; trademarked entity of SPLabs</em>
+    </div>
+  </div>
+  <nav class="infobar-links" aria-label="Site links">
+    <a href="#" onclick="show('home');return false">Home</a>
+    <a href="#" onclick="show('books');return false">Teachers</a>
+    <a href="#" onclick="show('journal');return false">Journal</a>
+    <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
+    <a href="https://github.com/ceedot-rock/splabs-brand/blob/main/docs/SLID_PHI_STRIPE.md" target="_blank" rel="noopener">Pricing</a>
+    <a href="https://github.com/ceedot-rock/teachaid" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
 <div id="home" class="wrap">
-<div class="logo">
-<div style="font-size:4rem;line-height:1">📚</div>
-<h1>TEACH<span>AiD</span></h1>
-<p>Certified teachers grade you · only they pass you on</p>
-</div>
-<div class="label">Start here — complete beginners</div>
-<div class="card" onclick="openBook('s1')"><span class="tag">START 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">👩‍🏫 Certified: Mira · grades &amp; unlocks chapters</div></div>
-<div class="card" onclick="openBook('s2')"><span class="tag">START 02</span><h3>Positive & Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">🧑‍🏫 Certified: Nova · grades &amp; unlocks chapters</div></div>
-<div class="card" onclick="openBook('s3')"><span class="tag">START 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">👨‍💻 Certified: Bit · grades &amp; unlocks chapters</div></div>
-<div class="label">Next level</div>
-<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(59,130,246,.15);color:#3b82f6">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">🧭 Certified: Codex · grades &amp; unlocks chapters</div></div>
+<p class="label">Start here</p>
+<div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">Teacher Mira</div></div>
+<div class="card" onclick="openBook('s2')"><span class="tag">BOOK 02</span><h3>Positive &amp; Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">Teacher Nova</div></div>
+<div class="card" onclick="openBook('s3')"><span class="tag">BOOK 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">Teacher Bit</div></div>
+<p class="label">Next level</p>
+<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(147,197,253,.12);color:#93c5fd">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">Teacher Codex</div></div>
+<p class="legal">TEACHAiD is a licensed and trademarked entity of <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>. Each book includes a certified teacher who unlocks the next chapter when you are ready.</p>
 </div>
 
 <div id="reader" class="wrap hidden">
-<div class="topbar"><button onclick="goHome()">←</button><h2 id="btitle">Book</h2></div>
+<div class="topbar"><button type="button" onclick="goHome()">← Home</button><h2 id="btitle">Book</h2></div>
 <div class="pills" id="pills"></div>
 <div class="lesson" id="lesson"></div>
-
-<!-- Per-book teacher lives with the textbook -->
 <div class="teach-panel" id="teachPanel">
   <div class="teach-head">
     <div class="teach-avatar" id="tAvatar">T</div>
     <div>
       <strong id="tName">Teacher</strong>
-      <span id="tRole">Certified TEACHAiD teacher for this textbook</span>
+      <span id="tRole">Your tutor for this book</span>
     </div>
   </div>
-  <div class="lock-banner" id="lockBanner">Only this certified teacher can unlock the next chapter.</div>
+  <div class="lock-banner" id="lockBanner">Your teacher unlocks the next chapter when you have got it.</div>
   <div class="grade-box" id="gradeBox">
-    <h4>Live grade · this chapter</h4>
-    <div><span class="grade-score" id="gradeScore">—</span> <span style="color:#71717a;font-size:.75rem" id="gradePassLabel">not graded yet</span></div>
-    <p id="gradeCritique" style="color:#a1a1aa;margin-top:6px;font-size:.8rem">Learn with your teacher, then request a pass check.</p>
+    <div class="grade-top"><span class="grade-score" id="gradeScore">—</span><span class="grade-pass" id="gradePassLabel">not graded yet</span></div>
+    <p id="gradeCritique">Chat with your teacher — they note what you are getting and what to review.</p>
     <div class="grade-cols">
-      <div><strong class="g">Grasping</strong><ul id="gradeGrasp"><li style="color:#71717a">—</li></ul></div>
-      <div><strong class="r">Needs review</strong><ul id="gradeReview"><li style="color:#71717a">—</li></ul></div>
+      <div><strong class="g">Getting it</strong><ul id="gradeGrasp"><li style="color:#6b7280">—</li></ul></div>
+      <div><strong class="r">Review</strong><ul id="gradeReview"><li style="color:#6b7280">—</li></ul></div>
     </div>
   </div>
   <div class="pace">
-    <button type="button" class="on" id="paceSlow" onclick="setPace('slow')">Slow</button>
-    <button type="button" id="paceMed" onclick="setPace('medium')">My pace</button>
+    <button type="button" id="paceSlow" onclick="setPace('slow')">Slow</button>
+    <button type="button" class="on" id="paceMed" onclick="setPace('medium')">My pace</button>
     <button type="button" id="paceFast" onclick="setPace('fast')">Faster</button>
   </div>
   <div class="act-row">
-    <button type="button" class="btn row" onclick="teacherAction('explain')">📖 Explain</button>
-    <button type="button" class="btn row secondary" onclick="teacherAction('continue')">⏭ Continue</button>
-    <button type="button" class="btn row secondary" onclick="teacherAction('check')">✅ Pass check</button>
+    <button type="button" class="btn row" onclick="teacherAction('explain')">Teach me</button>
+    <button type="button" class="btn row secondary" onclick="teacherAction('continue')">Keep going</button>
+    <button type="button" class="btn row secondary" onclick="teacherAction('check')">Am I ready?</button>
   </div>
   <div class="chat-log" id="chatLog"></div>
   <div class="chat-row">
     <button type="button" class="icon-btn" id="micBtn" title="Voice input" onclick="toggleMic()">🎤</button>
     <button type="button" class="icon-btn speak-on" id="speakBtn" title="Speak answers" onclick="toggleSpeak()">🔊</button>
-    <input type="text" id="chatIn" placeholder="Answer a check or ask…" autocomplete="off" enterkeyhint="send">
+    <input type="text" id="chatIn" placeholder="Ask or answer…" autocomplete="off" enterkeyhint="send">
   </div>
-  <button class="btn" id="sendBtn" style="margin-top:10px" onclick="sendChat()">Ask / answer teacher</button>
-  <p class="voice-hint" id="voiceHint">Certified teachers only. Next chapter stays locked until you pass their check.</p>
+  <button class="btn" id="sendBtn" style="margin-top:10px" onclick="sendChat()">Send</button>
+  <p class="voice-hint" id="voiceHint">Mic + spoken answers · TEACHAiD / SPLabs</p>
 </div>
-
 <div class="nav-row">
 <button id="prevB" onclick="prevCh()">← Prev</button>
 <button id="nextB" onclick="nextCh()">Next →</button>
@@ -203,15 +224,12 @@ textarea{min-height:60px}
 </div>
 
 <div id="books" class="wrap hidden">
-<div class="topbar"><h2>Book teachers</h2></div>
-<div class="callout teacher">
-<div class="callout-title">Certified teachers only</div>
-Each textbook has a certified TEACHAiD teacher. They grade what you’re grasping vs what needs review. <strong>Only they can pass you to the next chapter.</strong>
-</div>
-<div class="card" onclick="openBook('s1')"><h3>Mira · Counting</h3><p>Patient counting & zero</p></div>
-<div class="card" onclick="openBook('s2')"><h3>Nova · Positive & Negative</h3><p>Number line coach</p></div>
-<div class="card" onclick="openBook('s3')"><h3>Bit · How Computers Count</h3><p>Bits & patterns</p></div>
-<div class="card" onclick="openBook('c1')"><h3>Codex · Integers to Codes</h3><p>Mapping & codes</p></div>
+<div class="topbar"><h2>Teachers</h2></div>
+<p class="legal" style="text-align:left;margin:0 0 12px">Each textbook has its own tutor. They teach that book only, notice what you are getting, and unlock the next chapter when you are ready. TEACHAiD · SPLabs.</p>
+<div class="card" onclick="openBook('s1')"><h3>Mira · Counting</h3><p>Patient counting &amp; zero</p></div>
+<div class="card" onclick="openBook('s2')"><h3>Nova · Positive &amp; Negative</h3><p>Number line coach</p></div>
+<div class="card" onclick="openBook('s3')"><h3>Bit · How Computers Count</h3><p>Bits &amp; patterns</p></div>
+<div class="card" onclick="openBook('c1')"><h3>Codex · Integers to Codes</h3><p>Mapping &amp; codes</p></div>
 </div>
 
 <nav class="tabbar">
@@ -226,10 +244,10 @@ var BOOKS={
 s1:{
   title:"Counting",
   teacher:"Mira",
-  teacherBlurb:"I only teach this Counting book. I read every page with you.",
+  teacherBlurb:"Friendly tutor for Counting — walks the pages with you.",
   avatar:"M",
   ch:[
-    {n:"Hello",h:"<h2>Hello</h2><div class='meta'>No prior knowledge needed</div><p>This is the first book. We start with <strong>counting</strong>.</p><div class='callout teacher'><div class='callout-title'>Your book teacher · Mira</div>Scroll down — Mira will explain this book at your pace and answer questions from these pages only.</div>",
+    {n:"Hello",h:"<h2>Hello</h2><div class='meta'>No prior knowledge needed</div><p>This is the first book. We start with <strong>counting</strong>.</p><div class='callout teacher'><div class='callout-title'>Your book teacher · Mira</div>Mira is below when you want company — she teaches only this book.</div>",
      t:"Chapter: Hello. This is the first book. Audience: complete beginners. Topic: counting. Encourage the learner. No prior knowledge needed."},
     {n:"What is counting?",h:"<h2>What is counting?</h2><p>Counting matches things to names:</p><p style='text-align:center;font-size:1.5rem;letter-spacing:.2em;margin:12px 0'>🍎 🍎 🍎</p><p style='text-align:center;color:#a1a1aa'>one · two · three</p><div class='callout idea'><div class='callout-title'>Simple idea</div>Counting answers: How many?</div>",
      t:"Chapter: What is counting? Counting matches things to number-names. Example: three apples → one, two, three. Core idea: counting answers 'How many?'"},
@@ -244,7 +262,7 @@ s1:{
 s2:{
   title:"Positive & Negative",
   teacher:"Nova",
-  teacherBlurb:"I teach only this number-line book.",
+  teacherBlurb:"Number-line tutor — patient with positives and negatives.",
   avatar:"N",
   ch:[
     {n:"Welcome",h:"<h2>Welcome</h2><p>You can count 0, 1, 2, 3… Now numbers can also go the other way: <strong>negative numbers</strong>.</p>",
@@ -262,7 +280,7 @@ s2:{
 s3:{
   title:"How Computers Count",
   teacher:"Bit",
-  teacherBlurb:"I only teach bits and computer counting from this book.",
+  teacherBlurb:"Bits tutor — makes on/off feel simple.",
   avatar:"B",
   ch:[
     {n:"Welcome",h:"<h2>Welcome</h2><p>Computers count with only two states: <strong>off</strong> and <strong>on</strong>.</p>",
@@ -278,7 +296,7 @@ s3:{
 c1:{
   title:"Integers to Codes",
   teacher:"Codex",
-  teacherBlurb:"I teach only this coding-integers book.",
+  teacherBlurb:"Integers & codes tutor — maps ideas step by step.",
   avatar:"C",
   ch:[
     {n:"Welcome",h:"<h2>From Integers to Codes</h2><p>Most codes speak <strong>positive integers</strong>. This book shows why and how we map any integer to a positive one.</p>",
@@ -343,7 +361,7 @@ function applyGrade(grade){
   renderGradeUI();
   renderChNavOnly();
   if(grade.pass && chi<BOOKS[cur].ch.length-1){
-    document.getElementById('lockBanner').textContent='✅ Passed! Next chapter unlocked by '+BOOKS[cur].teacher+'.';
+    document.getElementById('lockBanner').textContent='You passed — next chapter is open. Nice work!';
   }
 }
 function renderGradeUI(){
@@ -361,13 +379,13 @@ function renderGradeUI(){
     scoreEl.textContent='—';
     scoreEl.className='grade-score';
     passEl.textContent='not graded yet';
-    crit.textContent='Learn with your certified teacher, then request a pass check. Next chapter stays locked until they pass you.';
+    crit.textContent='Chat with your teacher — they notice what you get and what to review.';
     grasp.innerHTML='<li style="color:#71717a">—</li>';
     rev.innerHTML='<li style="color:#71717a">—</li>';
   }else{
     scoreEl.textContent=g.score;
     scoreEl.className='grade-score'+(g.score>=80?'':g.score>=70?' low':' fail');
-    passEl.textContent=g.pass?'PASSED this chapter':'needs more work';
+    passEl.textContent=g.pass?'ready for next':'keep practicing';
     passEl.style.color=g.pass?'#86efac':'#fbbf24';
     crit.textContent=g.critique||'';
     grasp.innerHTML=(g.grasp&&g.grasp.length)?g.grasp.map(function(x){return '<li>'+esc(x)+'</li>'}).join(''):'<li style="color:#71717a">—</li>';
@@ -375,12 +393,12 @@ function renderGradeUI(){
   }
   if(last){
     banner.textContent=prog.unlockedThrough>=BOOKS[cur].ch.length-1
-      ? 'Book complete when your teacher is satisfied with this last chapter.'
-      : 'Final chapter — certified teacher still grades you here.';
+      ? 'Last chapter — tell '+BOOKS[cur].teacher+' when you want a final check.'
+      : 'Last chapter with '+BOOKS[cur].teacher+'.';
   }else if(isUnlocked(chi+1)){
-    banner.textContent='✅ Next chapter unlocked by certified teacher '+BOOKS[cur].teacher+'.';
+    banner.textContent='Next chapter is open — nice work with '+BOOKS[cur].teacher+'.';
   }else{
-    banner.textContent='🔒 Only certified teacher '+BOOKS[cur].teacher+' can pass you to the next chapter.';
+    banner.textContent=BOOKS[cur].teacher+' unlocks the next chapter when you are ready.';
   }
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -415,8 +433,8 @@ function openBook(id){
   chi=Math.min(prog.unlockedThrough,BOOKS[id].ch.length-1);
   var b=BOOKS[id];
   document.getElementById('btitle').textContent=b.title;
-  document.getElementById('tName').textContent=b.teacher+' · certified';
-  document.getElementById('tRole').textContent=b.teacherBlurb+' Grades you; unlocks next chapter.';
+  document.getElementById('tName').textContent=b.teacher;
+  document.getElementById('tRole').textContent=b.teacherBlurb;
   document.getElementById('tAvatar').textContent=b.avatar||b.teacher.charAt(0);
   renderCh();
   renderChatFromHist(true);
@@ -436,7 +454,7 @@ function renderChNavOnly(){
     (function(idx,ok){
       p.onclick=function(){
         if(!ok){
-          addBubble('bot',BOOKS[cur].teacher+': That chapter is locked. Work with me here until I pass you on.',false);
+          addBubble('bot',"That one's still locked — let's finish this chapter together first.",false);
           return;
         }
         chi=idx;renderCh();noteChapterChange();
@@ -476,7 +494,7 @@ function renderCh(){
   window.scrollTo(0,0);
 }
 function noteChapterChange(){
-  addBubble('bot',BOOKS[cur].teacher+': Now on “'+BOOKS[cur].ch[chi].n+'”. I’ll grade as we go. When ready, tap Pass check — only I can unlock the next chapter.',false);
+  addBubble('bot',"Okay — now we're on “'+BOOKS[cur].ch[chi].n+'”. Ask me anything, or tap Teach me. When it clicks, try Am I ready?",false);
   renderGradeUI();
 }
 function prevCh(){
@@ -485,7 +503,7 @@ function prevCh(){
 function nextCh(){
   if(chi<BOOKS[cur].ch.length-1&&isUnlocked(chi+1)){chi++;renderCh();noteChapterChange()}
   else{
-    addBubble('bot',BOOKS[cur].teacher+': Next chapter is locked until I pass you. Learn, answer my checks, then tap Pass check.',false);
+    addBubble('bot',"That next chapter's still locked — hang with me a bit more, then hit Am I ready?",false);
   }
 }
 function initW(){
@@ -531,7 +549,7 @@ function renderChatFromHist(welcome){
   var h=getHist();
   if(!h.length&&welcome&&cur){
     var b=BOOKS[cur];
-    addBubble('bot',"I'm "+b.teacher+", your certified TEACHAiD teacher for “"+b.title+"”. I grade what you grasp and what needs review. Only I can pass you to the next chapter. Tap Explain, work with me, then Pass check.",false);
+    addBubble('bot',"Hey — I'm "+b.teacher+". I'll walk you through “"+b.title+"” like a real tutor. Tap Teach me, chat anytime, and when you feel ready hit Am I ready? I unlock the next chapter when you've got it.",false);
     return;
   }
   h.forEach(function(m){
@@ -554,15 +572,42 @@ function toggleSpeak(){
   b.textContent=speakOn?'🔊':'🔇';
   if(!speakOn&&window.speechSynthesis)speechSynthesis.cancel();
 }
+function pickVoice(){
+  if(!window.speechSynthesis)return null;
+  var voices=speechSynthesis.getVoices()||[];
+  if(!voices.length)return null;
+  var prefer=['Google US English','Google UK English Female','Samantha','Karen','Moira','Microsoft Aria','Microsoft Jenny','Natural'];
+  for(var i=0;i<prefer.length;i++){
+    for(var j=0;j<voices.length;j++){
+      if(voices[j].name&&voices[j].name.indexOf(prefer[i])>=0)return voices[j];
+    }
+  }
+  var en=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('en')===0});
+  // Prefer female-sounding or local service voices when available
+  for(var k=0;k<en.length;k++){
+    var n=(en[k].name||'').toLowerCase();
+    if(n.indexOf('female')>=0||n.indexOf('samantha')>=0||n.indexOf('zira')>=0)return en[k];
+  }
+  return en[0]||voices[0];
+}
 function speak(text){
   if(!speakOn||!window.speechSynthesis)return;
   try{
     speechSynthesis.cancel();
-    var u=new SpeechSynthesisUtterance(text);
-    u.rate=pace==='slow'?0.88:pace==='fast'?1.05:0.95;
+    // Strip overly stiff punctuation runs for smoother TTS
+    var clean=String(text).replace(/\s+/g,' ').trim();
+    if(clean.length>500)clean=clean.slice(0,500)+'…';
+    var u=new SpeechSynthesisUtterance(clean);
+    u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
+    u.pitch=1.02;
     u.lang='en-US';
+    var v=pickVoice();
+    if(v)u.voice=v;
     speechSynthesis.speak(u);
   }catch(e){}
+}
+if(window.speechSynthesis){
+  speechSynthesis.onvoiceschanged=function(){pickVoice()};
 }
 function getRecog(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -640,16 +685,16 @@ async function callTeacher(mode,userLine){
     addBubble('err','Network error: '+(e.message||'failed')+'. XAI_API_KEY on Vercel (nektaronbase-cells-projects / teachaid).',false);
   }finally{
     btn.disabled=false;
-    btn.textContent='Ask / answer teacher';
+    btn.textContent='Send';
   }
 }
 
 async function teacherAction(mode){
   if(!cur)return;
   var line;
-  if(mode==='explain')line='Please explain “'+BOOKS[cur].ch[chi].n+'” thoroughly at a '+pace+' pace, and grade what I grasp.';
-  else if(mode==='continue')line='Continue teaching at '+pace+' pace and keep grading me.';
-  else line='Certified pass check: grade what I’m grasping vs what needs review for “'+BOOKS[cur].ch[chi].n+'”. Only pass me if I’m ready for the next chapter.';
+  if(mode==='explain')line='Teach me “'+BOOKS[cur].ch[chi].n+'” at a '+pace+' pace — friendly and clear.';
+  else if(mode==='continue')line='Keep going at '+pace+' pace.';
+  else line='Am I ready to move on from “'+BOOKS[cur].ch[chi].n+'”? Be honest but kind.';
   await callTeacher(mode,line);
 }
 
@@ -668,7 +713,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 /* Force fresh app after deploy — unregister stale SWs then register v6 */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v6';
+  var VER='v7';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));
@@ -678,7 +723,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=6');
+      return navigator.serviceWorker.register('./sw.js?v=7');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -687,7 +732,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=6').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=7').catch(function(){});
   }
 })();
 show('home');

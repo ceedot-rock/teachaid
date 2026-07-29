@@ -168,7 +168,7 @@ textarea{min-height:56px}
 <div class="j-card" id="voiceProCard" style="display:none">
   <p class="label" style="margin-top:0">Voice tiers · TEACHAiD / SPLabs</p>
   <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices: Auto, Soft, Clear, Warm. Free &amp; private.</p>
-  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 once</strong> — pick neural voice models (Nova, Shimmer, Alloy, ElevenLabs…). Unlocks after Stripe checkout.</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 once</strong> — Grok / SpaceXAI neural voices (Eve, Ara, Leo, Rex…). Unlocks after Stripe checkout.</p>
   <a class="btn" id="proCheckoutBtn" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03" style="display:block;text-align:center;text-decoration:none">Unlock Pro with Stripe · $9</a>
   <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic');document.getElementById('voiceProCard').style.display='none'">Stay on Basic</button>
   <p class="voice-hint">After payment you return here automatically. Pro is verified with Stripe before voices unlock.</p>
@@ -625,14 +625,17 @@ var BASIC_VOICES=[
   {id:'browser:warm',label:'Warm coach',tier:'basic'}
 ];
 var PRO_VOICES=[
-  {id:'browser:premium',label:'Pro on-device (recommended)',tier:'pro'},
-  {id:'openai:nova',label:'Cloud · Nova (needs API key)',tier:'pro'},
-  {id:'openai:shimmer',label:'Neural · Shimmer',tier:'pro'},
-  {id:'openai:alloy',label:'Neural · Alloy',tier:'pro'},
-  {id:'openai:echo',label:'Neural · Echo',tier:'pro'},
-  {id:'openai:fable',label:'Neural · Fable',tier:'pro'},
-  {id:'openai:onyx',label:'Neural · Onyx',tier:'pro'},
-  {id:'elevenlabs:default',label:'Cloud · ElevenLabs (needs API key)',tier:'pro'}
+  {id:'xai:eve',label:'Grok · Eve (default)',tier:'pro'},
+  {id:'xai:ara',label:'Grok · Ara',tier:'pro'},
+  {id:'xai:celeste',label:'Grok · Celeste',tier:'pro'},
+  {id:'xai:iris',label:'Grok · Iris',tier:'pro'},
+  {id:'xai:carina',label:'Grok · Carina',tier:'pro'},
+  {id:'xai:leo',label:'Grok · Leo',tier:'pro'},
+  {id:'xai:rex',label:'Grok · Rex',tier:'pro'},
+  {id:'xai:sal',label:'Grok · Sal',tier:'pro'},
+  {id:'xai:atlas',label:'Grok · Atlas',tier:'pro'},
+  {id:'xai:helios',label:'Grok · Helios',tier:'pro'},
+  {id:'browser:premium',label:'On-device premium (fallback)',tier:'pro'}
 ];
 
 function isPro(){return tier==='pro'}
@@ -670,8 +673,8 @@ function onVoiceModelChange(){
   var sel=document.getElementById('voiceModel');
   if(!sel)return;
   voiceModel=sel.value;
-  if(voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0){
-    if(!isPro()){setTier('basic');return}
+  if(voiceModel.indexOf('xai:')===0||voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0){
+    if(!isPro()){showVoicePro(); fillVoiceSelect(); return}
   }
   localStorage.setItem(VOICE_KEY,voiceModel);
 }
@@ -683,7 +686,7 @@ function setTier(t){
   }
   tier=(t==='pro')?'pro':'basic';
   localStorage.setItem(TIER_KEY,tier);
-  if(!isPro() && (voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0||voiceModel==='browser:premium')){
+  if(!isPro() && (voiceModel.indexOf('xai:')===0||voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0||voiceModel==='browser:premium')){
     voiceModel='browser:auto';
     localStorage.setItem(VOICE_KEY,voiceModel);
   }
@@ -692,8 +695,8 @@ function setTier(t){
   if(card && t==='basic') card.style.display='none';
   var hint=document.getElementById('voiceHint');
   if(hint) hint.textContent=isPro()
-    ? 'Pro unlocked · pick a neural voice (falls back on-device if needed)'
-    : 'Basic · strong on-device voice · Get Pro for neural models ($9)';
+    ? 'Pro · Grok/xAI neural voices · falls back on-device if needed'
+    : 'Basic · strong on-device voice · Get Pro for Grok voices ($9)';
 }
 function activatePro(){
   /* only after Stripe verify stored PRO_SESSION_KEY */
@@ -701,13 +704,11 @@ function activatePro(){
   tier='pro';
   localStorage.setItem(TIER_KEY,'pro');
   // Default Pro to best on-device voice; user can pick neural if server supports it
-  if(!voiceModel || voiceModel.indexOf('openai:')===0 || voiceModel.indexOf('elevenlabs:')===0){
-    voiceModel='browser:premium';
-    localStorage.setItem(VOICE_KEY,voiceModel);
-  }
+  voiceModel='xai:eve';
+  localStorage.setItem(VOICE_KEY,voiceModel);
   fillVoiceSelect();
   var hint=document.getElementById('voiceHint');
-  if(hint) hint.textContent='Pro unlocked · choose a neural voice model';
+  if(hint) hint.textContent='Pro unlocked · Grok voice (Eve default). Pick another Grok voice above.';
   var card=document.getElementById('voiceProCard');
   if(card) card.style.display='none';
 }
@@ -859,10 +860,11 @@ function speakBrowser(text, style, fromUserGesture){
   });
 }
 async function speakNeural(text, model){
+  var speed=pace==='slow'?0.85:pace==='fast'?1.15:1.0;
   var r=await fetch('/api/tts',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({text:text, model:model, tier:'pro'})
+    body:JSON.stringify({text:text, model:model, tier:'pro', speed:speed})
   });
   var ct=r.headers.get('content-type')||'';
   if(!r.ok || ct.indexOf('audio')<0){
@@ -881,7 +883,7 @@ async function speak(text, fromUserGesture){
   var model=voiceModel||'browser:auto';
   try{
     // Neural only if Pro AND model is cloud AND user gesture preferred for audio.play
-    if(isPro() && (model.indexOf('openai:')===0 || model.indexOf('elevenlabs:')===0)){
+    if(isPro() && (model.indexOf('xai:')===0 || model.indexOf('openai:')===0 || model.indexOf('elevenlabs:')===0)){
       try{
         await speakNeural(text, model);
         var hint=document.getElementById('voiceHint');
@@ -1023,7 +1025,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 /* Force fresh app after deploy — unregister stale SWs then register v6 */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v9';
+  var VER='v10';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));
@@ -1033,7 +1035,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=9');
+      return navigator.serviceWorker.register('./sw.js?v=10');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -1042,7 +1044,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=9').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=10').catch(function(){});
   }
 })();
 fillVoiceSelect();

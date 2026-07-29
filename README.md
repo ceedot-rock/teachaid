@@ -88,8 +88,12 @@ Needs `XAI_API_KEY` (same as teacher chat).
 | **Trial** | **$0.99** · 7-day gated Pro | https://buy.stripe.com/9B68wQgjPapydpHcwM6wE05 |
 | **Pro** | **$9 / month** | https://buy.stripe.com/14A3cw7Nj8hqfxP7cs6wE04 |
 | **Submit a class** | **$3** review fee; royalties if accepted (Stripe payout) | https://buy.stripe.com/8x2aEYffLdBK5XfeEU6wE06 |
+| **Chaternity create** | **$20** one-time room credit | https://buy.stripe.com/fZueVe0kR2X685n40g6wE07 |
+| **Chaternity join** | **$1/mo** study & common (90% creator · 10% TEACHAiD Fund) | https://buy.stripe.com/cNibJ26Jf55eclDdAQ6wE08 |
 
 Pricing page: `/pricing.html` · details: [`docs/PRO_STRIPE.md`](docs/PRO_STRIPE.md)
+
+**Chaternities:** fraternity / study / common rooms; admit by creator or admins they appoint.
 
 ### Voice tiers
 

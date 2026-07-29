@@ -481,6 +481,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
     <a href="#" onclick="show('journal');return false">Journal</a>
     <a href="#" onclick="show('certs');return false">Certificates</a>
     <a href="#" onclick="show('student');return false">Student</a>
+    <a href="#" onclick="show('chaternities');return false">Chaternities</a>
     <a href="https://splabs-brand.vercel.app/" target="_blank" rel="noopener">SPLabs</a>
     <a href="pricing.html">Pricing</a>
     <a href="#voice-pro" onclick="showVoicePro();return false">Voice</a>
@@ -651,6 +652,74 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 <div id="currCatalog"></div>
 </div>
 
+<div id="chaternities" class="wrap hidden">
+<div class="topbar"><h2>Chaternities</h2></div>
+<p class="legal" style="text-align:left;margin:0 0 12px">
+  Fraternity-style rooms and study commons. <strong>Create a room: $20</strong> (one-time).
+  <strong>Study &amp; student common rooms: $1/month</strong> to join — <strong>90%</strong> to the creator, <strong>10%</strong> to the <strong>TEACHAiD Fund</strong>.
+  Admittance controlled by the <strong>creator</strong> and/or <strong>admins</strong> they appoint.
+</p>
+
+<div class="upload-card">
+  <p class="label" style="margin-top:0">Fees · Stripe live</p>
+  <p class="hint" id="chatSplitHint">$1/mo join → 90¢ creator · 10¢ TEACHAiD Fund</p>
+  <a class="btn" id="chatCreatePayBtn" href="https://buy.stripe.com/fZueVe0kR2X685n40g6wE07" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px">Pay $20 · create-room credit</a>
+  <a class="btn secondary" id="chatJoinPayBtn" href="https://buy.stripe.com/cNibJ26Jf55eclDdAQ6wE08" style="display:block;text-align:center;text-decoration:none">Pay $1/mo · join pass (study &amp; common)</a>
+  <p class="upload-status" id="chatPayStatus"></p>
+</div>
+
+<div class="upload-card">
+  <p class="label" style="margin-top:0">Create room</p>
+  <label for="chatRoomName">Name</label>
+  <input type="text" id="chatRoomName" placeholder="e.g. Sigma Study Hall" maxlength="60"/>
+  <label for="chatRoomType">Type</label>
+  <select id="chatRoomType">
+    <option value="fraternity">Fraternity (admit by creator/admin)</option>
+    <option value="study">Study room ($1/mo join + admit)</option>
+    <option value="common">Student common ($1/mo join + admit)</option>
+  </select>
+  <label for="chatRoomTopic">Topic (optional)</label>
+  <input type="text" id="chatRoomTopic" placeholder="Calculus midterms · night crew" maxlength="160"/>
+  <button type="button" class="btn" onclick="createChaternityRoom()">Create Chaternity</button>
+  <p class="upload-status" id="chatCreateStatus"></p>
+</div>
+
+<div class="upload-card">
+  <p class="label" style="margin-top:0">Join with room code</p>
+  <textarea id="chatImportCode" placeholder="TEACHAiD_CHAT:…" style="min-height:56px"></textarea>
+  <label for="chatJoinNote">Note to admins</label>
+  <input type="text" id="chatJoinNote" placeholder="Why I want in…"/>
+  <button type="button" class="btn secondary" onclick="importAndRequestChat()">Import code &amp; request join</button>
+  <p class="upload-status" id="chatJoinStatus"></p>
+</div>
+
+<p class="label">Your rooms</p>
+<div id="chatRoomList"><p style="color:#71717a;font-size:.85rem">None yet.</p></div>
+
+<div id="chatRoomView" class="upload-card hidden">
+  <div class="topbar" style="padding:0 0 10px">
+    <button type="button" class="btn secondary" style="width:auto;padding:8px 12px" onclick="closeChatRoomView()">← Rooms</button>
+    <h2 id="chatViewTitle" style="font-size:1rem;margin:0">Room</h2>
+  </div>
+  <p class="hint" id="chatViewMeta"></p>
+  <div id="chatPendingBox" class="hidden" style="margin-bottom:12px">
+    <p class="label">Pending join requests</p>
+    <div id="chatPendingList"></div>
+  </div>
+  <div id="chatAdminBox" class="hidden" style="margin-bottom:12px">
+    <p class="label">Admins (creator only)</p>
+    <input type="text" id="chatAdminIds" placeholder="Student IDs, comma-separated"/>
+    <button type="button" class="btn secondary" onclick="saveChatAdmins()">Save admins</button>
+  </div>
+  <div id="chatMessages" style="max-height:40vh;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px"></div>
+  <div class="chat-row">
+    <input type="text" id="chatMsgIn" placeholder="Message the room…" autocomplete="off" enterkeyhint="send"/>
+  </div>
+  <button type="button" class="btn" style="margin-top:8px" onclick="sendChatRoomMsg()">Send</button>
+  <button type="button" class="btn secondary" style="margin-top:8px" onclick="shareChatRoomCode()">Share room code</button>
+</div>
+</div>
+
 <div id="student" class="wrap hidden">
 <div class="topbar"><h2>Student Campus</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Share comments, quiz scores, and test results with classmates. Posts stay on this device; use <strong>Share</strong> to send socially. TEACHAiD · SPLabs.</p>
@@ -766,6 +835,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 <button class="tab on" id="tabHome" onclick="show('home')"><span>🏠</span>Home</button>
 <button class="tab" id="tabCurriculum" onclick="show('curriculum')"><span>📚</span>Curriculum</button>
 <button class="tab" id="tabStudent" onclick="show('student')"><span>👥</span>Student</button>
+<button class="tab" id="tabChat" onclick="show('chaternities')"><span>🏛️</span>Chat</button>
 <button class="tab" id="tabJournal" onclick="show('journal')"><span>📓</span>Journal</button>
 <button class="tab" id="tabBooks" onclick="show('books')"><span>👩‍🏫</span>Teachers</button>
 </nav>
@@ -774,6 +844,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 <script src="curriculum-enrichment.js"></script>
 <script src="lib/mastery.js"></script>
 <script src="lib/student-referral.js"></script>
+<script src="lib/chaternities.js"></script>
 <script>
 /* BUILTIN_BOOKS + BUILTIN_TRACKS; TeachaidMastery; TeachaidReferral */
 if(typeof BUILTIN_BOOKS==='undefined'){var BUILTIN_BOOKS={};}
@@ -1245,11 +1316,18 @@ var STRIPE_LINKS={
   proMonthly:'https://buy.stripe.com/14A3cw7Nj8hqfxP7cs6wE04',
   trial7d:'https://buy.stripe.com/9B68wQgjPapydpHcwM6wE05',
   curriculumSubmit:'https://buy.stripe.com/8x2aEYffLdBK5XfeEU6wE06',
+  chaternityCreate:'https://buy.stripe.com/fZueVe0kR2X685n40g6wE07',
+  chaternityJoin:'https://buy.stripe.com/cNibJ26Jf55eclDdAQ6wE08',
   proLegacyOnce:'https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03'
 };
 var PRO_PAY_LINK=STRIPE_LINKS.proMonthly;
 var TRIAL_PAY_LINK=STRIPE_LINKS.trial7d;
 var SUBMIT_PAY_LINK=STRIPE_LINKS.curriculumSubmit;
+var CHAT_CREATE_LINK=STRIPE_LINKS.chaternityCreate;
+var CHAT_JOIN_LINK=STRIPE_LINKS.chaternityJoin;
+var CHAT_STORE_KEY='teachaid_chaternities_v1';
+var activeChatRoomId=null;
+var TC=typeof TeachaidChaternities!=='undefined'?TeachaidChaternities:null;
 var PRO_SESSION_KEY='teachaid_pro_session_v1';
 var PRO_UNTIL_KEY='teachaid_pro_until_v1';
 var TRIAL_UNTIL_KEY='teachaid_trial_until_v1';
@@ -1749,7 +1827,7 @@ function setPace(p){
   document.getElementById('paceFast').className=p==='fast'?'on':'';
 }
 function show(which){
-  ['home','reader','journal','books','curriculum','certs','student'].forEach(function(id){
+  ['home','reader','journal','books','curriculum','certs','student','chaternities'].forEach(function(id){
     var el=document.getElementById(id);
     if(!el)return;
     if(id===which)el.classList.remove('hidden');else el.classList.add('hidden');
@@ -1759,12 +1837,15 @@ function show(which){
   if(tabC)tabC.className='tab'+(which==='curriculum'?' on':'');
   var tabS=document.getElementById('tabStudent');
   if(tabS)tabS.className='tab'+(which==='student'?' on':'');
+  var tabChat=document.getElementById('tabChat');
+  if(tabChat)tabChat.className='tab'+(which==='chaternities'?' on':'');
   document.getElementById('tabJournal').className='tab'+(which==='journal'?' on':'');
   document.getElementById('tabBooks').className='tab'+(which==='books'?' on':'');
   if(which==='reader'||which==='certs'){
     document.getElementById('tabHome').className='tab';
     if(tabC)tabC.className='tab';
     if(tabS)tabS.className='tab';
+    if(tabChat)tabChat.className='tab';
     document.getElementById('tabJournal').className='tab';
     document.getElementById('tabBooks').className='tab';
   }
@@ -1772,11 +1853,15 @@ function show(which){
   if(which==='curriculum'){
     renderCustomBooksUI();
     setCurrMode(currMode||'create');
+    refreshSubmitPayUi();
   }
   if(which==='certs'||which==='home')renderCertsUI();
   if(which==='student'){
     renderCampusFeed();
     renderReferralUI();
+  }
+  if(which==='chaternities'){
+    refreshChatPayUi();
   }
   window.scrollTo(0,0);
 }
@@ -2195,6 +2280,195 @@ async function applyFriendReferral(){
     renderReferralUI();
   }
 }
+/* —— Chaternities —— */
+function loadChatStore(){
+  if(!TC)return{rooms:{},memberships:{},createCredits:0,joinUntil:0};
+  try{
+    return TC.ensureStore(JSON.parse(localStorage.getItem(CHAT_STORE_KEY)||'null'));
+  }catch(e){return TC.emptyStore()}
+}
+function saveChatStore(s){
+  localStorage.setItem(CHAT_STORE_KEY,JSON.stringify(s));
+}
+function setChatPayStatus(msg,kind){
+  var el=document.getElementById('chatPayStatus');
+  if(!el)return;
+  el.textContent=msg||'';
+  el.className='upload-status'+(kind?' '+kind:'');
+}
+function refreshChatPayUi(){
+  var s=loadChatStore();
+  var el=document.getElementById('chatPayStatus');
+  var split=TC?TC.splitDisplay():null;
+  var hint=document.getElementById('chatSplitHint');
+  if(hint&&split)hint.textContent=split.note+' Creator gets ~'+split.creatorPerJoinCents+'¢ · Fund ~'+split.fundPerJoinCents+'¢ per join.';
+  var cbtn=document.getElementById('chatCreatePayBtn');
+  var jbtn=document.getElementById('chatJoinPayBtn');
+  if(cbtn)cbtn.href=CHAT_CREATE_LINK;
+  if(jbtn)jbtn.href=CHAT_JOIN_LINK;
+  if(el){
+    var parts=[];
+    parts.push('Create credits: '+(s.createCredits||0));
+    if(s.joinUntil>Date.now())parts.push('Join pass until '+new Date(s.joinUntil).toLocaleDateString());
+    else parts.push('No active $1/mo join pass');
+    el.textContent=parts.join(' · ');
+    el.className='upload-status';
+  }
+  renderChatRoomList();
+}
+function createChaternityRoom(){
+  if(!TC){document.getElementById('chatCreateStatus').textContent='Module missing — hard refresh.';return}
+  var acc=loadStudentAccount();
+  var store=loadChatStore();
+  var r=TC.createRoom(store,{
+    name:(document.getElementById('chatRoomName').value||'').trim(),
+    type:document.getElementById('chatRoomType').value||'fraternity',
+    topic:(document.getElementById('chatRoomTopic').value||'').trim(),
+    creatorId:acc.studentId,
+    creatorName:getCampusName()
+  });
+  var st=document.getElementById('chatCreateStatus');
+  if(!r.ok){
+    st.textContent=r.error;
+    st.className='upload-status err';
+    if(/Pay \$20/i.test(r.error||'')){
+      var card=document.getElementById('chatCreatePayBtn');
+      if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    return;
+  }
+  saveChatStore(r.store);
+  st.textContent='Room “'+r.room.name+'” created. Share the room code with members.';
+  st.className='upload-status ok';
+  document.getElementById('chatRoomName').value='';
+  refreshChatPayUi();
+  openChatRoom(r.room.id);
+}
+function renderChatRoomList(){
+  var el=document.getElementById('chatRoomList');
+  if(!el||!TC)return;
+  var rooms=TC.listRooms(loadChatStore());
+  if(!rooms.length){
+    el.innerHTML='<p style="color:#71717a;font-size:.85rem">None yet — pay $20 for a create credit, then name a room.</p>';
+    return;
+  }
+  el.innerHTML=rooms.map(function(room){
+    var n=(room.members&&room.members.length)||0;
+    var pend=(room.pending&&room.pending.length)||0;
+    return '<div class="card" onclick="openChatRoom(\''+room.id+'\')">'+
+      '<span class="tag">'+esc(room.type)+'</span>'+
+      '<h3>'+esc(room.name)+'</h3>'+
+      '<p>'+esc(room.topic||'No topic')+' · Creator '+esc(room.creatorName||'')+'</p>'+
+      '<div class="ch-meta">'+n+' members'+(pend?' · '+pend+' pending':'')+'</div></div>';
+  }).join('');
+}
+function openChatRoom(id){
+  activeChatRoomId=id;
+  var store=loadChatStore();
+  var room=TC.getRoom(store,id);
+  if(!room)return;
+  document.getElementById('chatRoomView').classList.remove('hidden');
+  document.getElementById('chatViewTitle').textContent=room.name;
+  document.getElementById('chatViewMeta').textContent=
+    room.type+' · admit by creator/admin · $1/mo study&common (90% creator / 10% fund)';
+  var acc=loadStudentAccount();
+  var admin=TC.isAdmin(room,acc.studentId);
+  var pendBox=document.getElementById('chatPendingBox');
+  var pendList=document.getElementById('chatPendingList');
+  if(admin&&room.pending&&room.pending.length){
+    pendBox.classList.remove('hidden');
+    pendList.innerHTML=room.pending.map(function(p){
+      return '<div class="campus-post"><div class="who">'+esc(p.name)+' · '+esc(p.studentId)+'</div>'+
+        '<div class="body">'+(esc(p.note)||'No note')+'</div>'+
+        '<div class="share-row">'+
+        '<button type="button" onclick="decideChatJoin(\''+p.studentId+'\',true)">Admit</button>'+
+        '<button type="button" onclick="decideChatJoin(\''+p.studentId+'\',false)">Deny</button>'+
+        '</div></div>';
+    }).join('');
+  }else{
+    pendBox.classList.add('hidden');
+    pendList.innerHTML='';
+  }
+  var adminBox=document.getElementById('chatAdminBox');
+  if(room.creatorId===acc.studentId){
+    adminBox.classList.remove('hidden');
+    document.getElementById('chatAdminIds').value=(room.adminIds||[]).join(', ');
+  }else adminBox.classList.add('hidden');
+  var log=document.getElementById('chatMessages');
+  log.innerHTML=(room.messages||[]).map(function(m){
+    return '<div class="bubble bot"><strong style="font-size:.75rem;color:#5eead4">'+esc(m.name)+'</strong><br/>'+esc(m.text)+
+      '<div style="font-size:.65rem;color:#6b7280;margin-top:4px">'+esc((m.at||'').slice(0,16).replace('T',' '))+'</div></div>';
+  }).join('')||'<p style="color:#71717a;font-size:.85rem">No messages yet.</p>';
+  log.scrollTop=log.scrollHeight;
+}
+function closeChatRoomView(){
+  activeChatRoomId=null;
+  document.getElementById('chatRoomView').classList.add('hidden');
+  renderChatRoomList();
+}
+function decideChatJoin(targetId,approve){
+  var acc=loadStudentAccount();
+  var store=loadChatStore();
+  var r=TC.decideJoin(store,activeChatRoomId,acc.studentId,targetId,approve);
+  if(!r.ok){alert(r.error);return}
+  saveChatStore(r.store);
+  openChatRoom(activeChatRoomId);
+}
+function saveChatAdmins(){
+  var acc=loadStudentAccount();
+  var raw=(document.getElementById('chatAdminIds').value||'');
+  var ids=raw.split(/[,\s]+/).map(function(x){return x.trim()}).filter(Boolean);
+  var store=loadChatStore();
+  var r=TC.setAdmins(store,activeChatRoomId,acc.studentId,ids);
+  if(!r.ok){alert(r.error);return}
+  saveChatStore(r.store);
+  openChatRoom(activeChatRoomId);
+}
+function sendChatRoomMsg(){
+  if(!activeChatRoomId)return;
+  var acc=loadStudentAccount();
+  var text=(document.getElementById('chatMsgIn').value||'').trim();
+  var store=loadChatStore();
+  var r=TC.postMessage(store,activeChatRoomId,acc.studentId,getCampusName(),text);
+  if(!r.ok){alert(r.error);return}
+  saveChatStore(r.store);
+  document.getElementById('chatMsgIn').value='';
+  openChatRoom(activeChatRoomId);
+}
+function shareChatRoomCode(){
+  if(!activeChatRoomId||!TC)return;
+  var room=TC.getRoom(loadChatStore(),activeChatRoomId);
+  var code=TC.exportRoomCode(room);
+  var text='Join my TEACHAiD Chaternity “'+(room&&room.name)+'”\n'+code+'\nhttps://teachaid.vercel.app';
+  if(navigator.share)navigator.share({title:'Chaternity',text:text}).catch(function(){copyTextFallback(text)});
+  else copyTextFallback(text);
+}
+function importAndRequestChat(){
+  if(!TC)return;
+  var code=(document.getElementById('chatImportCode').value||'').trim();
+  var note=(document.getElementById('chatJoinNote').value||'').trim();
+  var st=document.getElementById('chatJoinStatus');
+  var store=loadChatStore();
+  var imp=TC.importRoomStub(store,code);
+  if(!imp.ok){st.textContent=imp.error;st.className='upload-status err';return}
+  saveChatStore(imp.store);
+  var acc=loadStudentAccount();
+  var room=imp.room;
+  // study/common need join pass before request
+  if((room.type==='study'||room.type==='common')&&!TC.hasJoinPass(imp.store)){
+    st.textContent='Pay $1/month join pass first, then request admit.';
+    st.className='upload-status err';
+    return;
+  }
+  var req=TC.requestJoin(loadChatStore(),room.id,acc.studentId,getCampusName(),note);
+  if(!req.ok){st.textContent=req.error;st.className='upload-status err';return}
+  saveChatStore(req.store);
+  st.textContent='Join request sent — creator/admin must admit you.';
+  st.className='upload-status ok';
+  renderChatRoomList();
+  openChatRoom(room.id);
+}
+
 async function claimReferralThankYou(){
   if(!TR){setReferralStatus('Referral module missing.','err');return}
   var raw=(document.getElementById('thankYouIn').value||'').trim();
@@ -2374,6 +2648,18 @@ async function verifyProSession(sessionId){
         if(hint) hint.textContent='Submit fee paid · $3. Create your class for curriculum review.';
         show('curriculum');
         refreshSubmitPayUi();
+      }else if(sku==='chaternity_create'||amt===2000){
+        var cs=loadChatStore();
+        if(TC){cs=TC.grantCreateCredit(cs,1);saveChatStore(cs)}
+        if(hint) hint.textContent='Chaternity create credit +1 · $20. Name your room under Chat.';
+        show('chaternities');
+        refreshChatPayUi();
+      }else if(sku==='chaternity_join'||amt===100){
+        var js=loadChatStore();
+        if(TC){js=TC.grantJoinMonth(js);saveChatStore(js)}
+        if(hint) hint.textContent='Join pass active · $1/mo (90% creator / 10% TEACHAiD Fund).';
+        show('chaternities');
+        refreshChatPayUi();
       }else if(sku==='trial_7d'||amt===99){
         localStorage.setItem(PRO_SESSION_KEY,sessionId);
         activateTrial(Date.now()+TRIAL_MS);
@@ -2736,12 +3022,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 renderCustomBooksUI();
 renderBuiltinCatalog();
 renderCertsUI();
-try{loadStudentAccount();renderReferralUI()}catch(e){}
+try{loadStudentAccount();renderReferralUI();refreshSubmitPayUi()}catch(e){}
 
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v21';
+  var VER='v23';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

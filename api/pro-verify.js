@@ -80,12 +80,19 @@ module.exports = async function handler(req, res) {
     const amount = data.amount_total;
     let sku = "pro";
     if (amount === 99) sku = "trial_7d";
+    else if (amount === 100) sku = "chaternity_join";
     else if (amount === 300) sku = "curriculum_submit";
     else if (amount === 900) sku = "pro_monthly";
+    else if (amount === 2000) sku = "chaternity_create";
+
+    const isProSku =
+      sku === "pro" ||
+      sku === "pro_monthly" ||
+      sku === "trial_7d";
 
     return res.status(200).json({
       ok: true,
-      pro: sku !== "curriculum_submit",
+      pro: isProSku,
       sku,
       session_id: data.id,
       customer_email: data.customer_details?.email || data.customer_email || null,

@@ -31,6 +31,7 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 - **Certified teacher per textbook** — grounded in that book only  
 - **Grades throughout**: score, grasping, needs review  
 - **Chapter lock**: only the certified teacher can pass you to the next chapter  
+- **Certificate of Course Mastery**: issued when the teacher passes you on the **final chapter** at **91%+** (stored on device; print/PDF)  
 - Explain / Continue / Pass check · pace · voice  
 
 ## Load document API

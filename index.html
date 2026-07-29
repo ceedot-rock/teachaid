@@ -161,6 +161,39 @@ textarea{min-height:56px}
 .teaser-card p{font-size:.8rem;color:#9ca3af}
 .ch-meta{font-size:.72rem;color:#94a3b8;margin-top:4px}
 
+/* Certificates */
+.cert-card{background:linear-gradient(145deg,#14141f 0%,#1a2332 100%);border:1px solid rgba(251,191,36,.4);border-radius:14px;padding:14px 15px;margin-bottom:10px;cursor:pointer}
+.cert-card:hover{border-color:#fbbf24}
+.cert-card .tag{background:rgba(251,191,36,.15);color:#fbbf24}
+.cert-card h3{font-size:.95rem;margin:4px 0}
+.cert-card p{font-size:.78rem;color:#9ca3af}
+.cert-modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.cert-modal.hidden{display:none!important}
+.cert-sheet{width:100%;max-width:420px;background:linear-gradient(165deg,#0f1419 0%,#1a2836 50%,#122018 100%);border:2px solid #fbbf24;border-radius:16px;padding:22px 20px 18px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative}
+.cert-sheet .seal{width:56px;height:56px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#fbbf24,#f59e0b);display:grid;place-items:center;font-size:1.4rem;font-weight:800;color:#1a1200;border:3px solid rgba(255,255,255,.25)}
+.cert-sheet .org{text-align:center;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px}
+.cert-sheet h2{text-align:center;font-size:1.15rem;color:#fbbf24;margin-bottom:4px;font-weight:750}
+.cert-sheet .sub{text-align:center;font-size:.78rem;color:#9ca3af;margin-bottom:14px}
+.cert-sheet .learner{text-align:center;font-size:1.35rem;font-weight:700;color:#e8e8ed;margin:10px 0 4px;border-bottom:1px solid rgba(251,191,36,.35);padding-bottom:8px}
+.cert-sheet .course{text-align:center;font-size:1.05rem;color:#5eead4;font-weight:650;margin:10px 0 6px}
+.cert-sheet .meta-row{display:flex;justify-content:space-between;gap:8px;margin-top:14px;font-size:.72rem;color:#94a3b8}
+.cert-sheet .meta-row strong{display:block;color:#e8e8ed;font-size:.85rem;margin-top:2px}
+.cert-sheet .score-big{text-align:center;font-size:2rem;font-weight:800;color:#a3e635;margin:8px 0 2px}
+.cert-sheet .idline{text-align:center;font-size:.62rem;color:#6b7280;margin-top:12px;word-break:break-all}
+.cert-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cert-actions .btn{flex:1;min-width:120px}
+.cert-name-row{margin:10px 0}
+.cert-name-row label{font-size:.7rem;color:#7c7c8e}
+.cert-name-row input{width:100%;background:#0b0b12;border:1px solid #2a2a3c;color:#e8e8ed;padding:10px;border-radius:8px;font-size:.9rem;font-family:inherit}
+.mastery-hint{font-size:.72rem;color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:8px 10px;margin:8px 0 0}
+@media print{
+  body *{visibility:hidden!important}
+  .cert-modal,.cert-modal *{visibility:visible!important}
+  .cert-modal{position:static;background:#fff;padding:0}
+  .cert-sheet{box-shadow:none;border-color:#b45309;max-width:100%}
+  .cert-actions,.cert-name-row{display:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -177,6 +210,7 @@ textarea{min-height:56px}
     <a href="#" onclick="show('curriculum');return false">Curriculum</a>
     <a href="#" onclick="show('books');return false">Teachers</a>
     <a href="#" onclick="show('journal');return false">Journal</a>
+    <a href="#" onclick="show('certs');return false">Certificates</a>
     <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
     <a href="https://github.com/ceedot-rock/splabs-brand/blob/main/docs/SLID_PHI_STRIPE.md" target="_blank" rel="noopener">Pricing</a>
     <a href="#voice-pro" onclick="showVoicePro();return false">Voice</a>
@@ -189,6 +223,13 @@ textarea{min-height:56px}
   <h3>📚 Curriculum · load documents</h3>
   <p>Create a new textbook or add materials to an existing one. Certified teacher included.</p>
 </div>
+<div class="teaser-card" onclick="show('certs')" role="button" tabindex="0" style="border-color:rgba(251,191,36,.35)">
+  <h3>🏅 Certificates of Course Mastery</h3>
+  <p>Earn when your teacher passes you at <strong style="color:#fbbf24">91% or better</strong> on the final chapter.</p>
+</div>
+
+<p class="label">Your certificates</p>
+<div id="certsHomePreview"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — finish a course with a final grade of 91%+.</p></div>
 
 <p class="label">Your books</p>
 <div class="custom-list" id="customBooksHome"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — open Curriculum to load a document.</p></div>
@@ -320,11 +361,47 @@ textarea{min-height:56px}
 <div id="currCatalog"></div>
 </div>
 
+<div id="certs" class="wrap hidden">
+<div class="topbar"><h2>Certificates</h2></div>
+<p class="legal" style="text-align:left;margin:0 0 12px">A <strong>Certificate of Course Mastery</strong> is issued when your certified teacher passes you on the <strong>final chapter</strong> with a score of <strong>91% or higher</strong>. TEACHAiD · SPLabs.</p>
+<label for="learnerCertName" style="margin-top:0">Name on certificates</label>
+<input type="text" id="learnerCertName" placeholder="Your name" autocomplete="name" onchange="saveLearnerName()" style="margin-bottom:12px"/>
+<div id="certsList"><p style="color:#71717a;font-size:.9rem">No certificates yet.</p></div>
+</div>
+
 <div id="books" class="wrap hidden">
 <div class="topbar"><h2>Teachers</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Each textbook has its own tutor. They teach that book only, notice what you are getting, and unlock the next chapter when you are ready. TEACHAiD · SPLabs.</p>
 <div id="customTeachersList"></div>
 <div id="teachersCatalog"></div>
+</div>
+
+<!-- Certificate modal -->
+<div id="certModal" class="cert-modal hidden" role="dialog" aria-modal="true" aria-labelledby="certModalTitle" onclick="if(event.target===this)closeCertModal()">
+  <div class="cert-sheet" id="certSheet">
+    <div class="seal">★</div>
+    <div class="org">TEACHAiD · SPLabs</div>
+    <h2 id="certModalTitle">Certificate of Course Mastery</h2>
+    <p class="sub">This certifies that</p>
+    <div class="cert-name-row">
+      <label for="certNameEdit">Recipient</label>
+      <input type="text" id="certNameEdit" placeholder="Your name" onchange="updateCertNameFromModal()"/>
+    </div>
+    <div class="learner" id="certLearner">Learner</div>
+    <p class="sub" style="margin-top:8px">has demonstrated course mastery in</p>
+    <div class="course" id="certCourse">Course</div>
+    <div class="score-big" id="certScore">91%</div>
+    <p class="sub" id="certScoreLabel">Final mastery score</p>
+    <div class="meta-row">
+      <div>Certified teacher<strong id="certTeacher">—</strong></div>
+      <div style="text-align:right">Issued<strong id="certDate">—</strong></div>
+    </div>
+    <p class="idline" id="certId">ID: —</p>
+    <div class="cert-actions">
+      <button type="button" class="btn" onclick="printCertificate()">Print / Save PDF</button>
+      <button type="button" class="btn secondary" onclick="closeCertModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <nav class="tabbar">
@@ -782,6 +859,31 @@ function isUnlocked(idx){
   if(!cur)return false;
   return idx<=getProgress(cur).unlockedThrough;
 }
+/** Mastery certificate threshold — teacher pass + score on final chapter */
+var MASTERY_MIN=91;
+var CERT_KEY='teachaid_certs_v1';
+var LEARNER_KEY='teachaid_learner_name_v1';
+var viewingCertId=null;
+
+function loadCerts(){
+  try{return JSON.parse(localStorage.getItem(CERT_KEY)||'[]')}catch(e){return[]}
+}
+function saveCerts(list){localStorage.setItem(CERT_KEY,JSON.stringify(list))}
+function getLearnerName(){return (localStorage.getItem(LEARNER_KEY)||'').trim()}
+function saveLearnerName(){
+  var el=document.getElementById('learnerCertName');
+  var n=(el&&el.value||'').trim().slice(0,80);
+  localStorage.setItem(LEARNER_KEY,n);
+  renderCertsUI();
+}
+function loadLearnerNameIntoUi(){
+  var n=getLearnerName();
+  var a=document.getElementById('learnerCertName');
+  if(a)a.value=n;
+  var b=document.getElementById('certNameEdit');
+  if(b&&!b.value)b.value=n;
+}
+
 function applyGrade(grade){
   if(!cur||!grade)return;
   var prog=getProgress(cur);
@@ -801,8 +903,130 @@ function applyGrade(grade){
   setProgress(cur,prog);
   renderGradeUI();
   renderChNavOnly();
-  if(grade.pass && chi<BOOKS[cur].ch.length-1){
+  var b=BOOKS[cur];
+  var last=chi>=b.ch.length-1;
+  if(grade.pass && !last){
     document.getElementById('lockBanner').textContent='You passed — next chapter is open. Nice work!';
+  }else if(grade.pass && last){
+    if(Number(grade.score)>=MASTERY_MIN){
+      document.getElementById('lockBanner').textContent='Course mastery! Certificate issued at '+grade.score+'%.';
+      maybeIssueMasteryCert(grade);
+    }else{
+      document.getElementById('lockBanner').textContent='Course complete — mastery certificate needs '+MASTERY_MIN+'+% (you scored '+grade.score+'%). Try Am I ready? again when sharper.';
+    }
+  }else if(!grade.pass && last && Number(grade.score)>=MASTERY_MIN){
+    // high score but teacher did not pass — rare
+    document.getElementById('lockBanner').textContent='Strong score — ask your teacher for a clear pass check to earn the certificate.';
+  }
+}
+
+function maybeIssueMasteryCert(grade){
+  if(!cur||!BOOKS[cur])return null;
+  if(!grade||grade.pass!==true)return null;
+  var score=Number(grade.score)||0;
+  if(score<MASTERY_MIN)return null;
+  var b=BOOKS[cur];
+  if(chi<b.ch.length-1)return null; // final chapter only
+
+  var list=loadCerts();
+  // upgrade existing cert for same book if higher score
+  var existing=null, idx=-1;
+  for(var i=0;i<list.length;i++){
+    if(list[i].bookId===cur){existing=list[i];idx=i;break}
+  }
+  if(existing && existing.score>=score){
+    // already have equal or better
+    openCertModal(existing.id);
+    renderCertsUI();
+    return existing;
+  }
+
+  var cert={
+    id:'cert_'+cur+'_'+Date.now().toString(36),
+    bookId:cur,
+    courseTitle:b.title,
+    teacher:b.teacher,
+    score:score,
+    chapterName:b.ch[chi]?b.ch[chi].n:'Final',
+    learnerName:getLearnerName()||'Learner',
+    issuedAt:new Date().toISOString(),
+    kind:'course_mastery',
+    threshold:MASTERY_MIN
+  };
+  if(idx>=0)list[idx]=cert;else list.unshift(cert);
+  saveCerts(list);
+  renderCertsUI();
+  openCertModal(cert.id);
+  try{
+    addBubble('bot','🏅 Certificate of Course Mastery issued for “'+b.title+'” at '+score+'%. Your teacher '+b.teacher+' certified you. View it under Certificates.',false);
+  }catch(e){}
+  return cert;
+}
+
+function openCertModal(certId){
+  var list=loadCerts();
+  var cert=null;
+  for(var i=0;i<list.length;i++)if(list[i].id===certId){cert=list[i];break}
+  if(!cert)return;
+  viewingCertId=certId;
+  var name=getLearnerName()||cert.learnerName||'Learner';
+  document.getElementById('certLearner').textContent=name;
+  document.getElementById('certNameEdit').value=name;
+  document.getElementById('certCourse').textContent=cert.courseTitle;
+  document.getElementById('certScore').textContent=cert.score+'%';
+  document.getElementById('certTeacher').textContent=cert.teacher;
+  var d=new Date(cert.issuedAt);
+  document.getElementById('certDate').textContent=isNaN(d.getTime())?cert.issuedAt:d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+  document.getElementById('certId').textContent='ID: '+cert.id+' · TEACHAiD / SPLabs · Mastery ≥'+MASTERY_MIN+'%';
+  document.getElementById('certModal').classList.remove('hidden');
+}
+function closeCertModal(){
+  document.getElementById('certModal').classList.add('hidden');
+  viewingCertId=null;
+}
+function updateCertNameFromModal(){
+  var n=(document.getElementById('certNameEdit').value||'').trim().slice(0,80);
+  localStorage.setItem(LEARNER_KEY,n);
+  document.getElementById('certLearner').textContent=n||'Learner';
+  var a=document.getElementById('learnerCertName');
+  if(a)a.value=n;
+  if(viewingCertId){
+    var list=loadCerts();
+    for(var i=0;i<list.length;i++){
+      if(list[i].id===viewingCertId){
+        list[i].learnerName=n||'Learner';
+        saveCerts(list);
+        break;
+      }
+    }
+    renderCertsUI();
+  }
+}
+function printCertificate(){window.print()}
+
+function renderCertsUI(){
+  loadLearnerNameIntoUi();
+  var list=loadCerts().slice().sort(function(a,b){return (b.issuedAt||'').localeCompare(a.issuedAt||'')});
+  var empty='<p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — pass the final chapter at '+MASTERY_MIN+'+% with your teacher.</p>';
+  function card(c){
+    var d=new Date(c.issuedAt);
+    var ds=isNaN(d.getTime())?'':d.toLocaleDateString();
+    return '<div class="cert-card" onclick="openCertModal(\''+c.id.replace(/'/g,"\\'")+'\')">'+
+      '<span class="tag">MASTERY</span>'+
+      '<h3>'+esc(c.courseTitle)+'</h3>'+
+      '<p>'+esc(c.learnerName||'Learner')+' · '+c.score+'% · Teacher '+esc(c.teacher)+(ds?' · '+ds:'')+'</p>'+
+      '</div>';
+  }
+  var home=document.getElementById('certsHomePreview');
+  var full=document.getElementById('certsList');
+  if(home){
+    if(!list.length)home.innerHTML=empty;
+    else home.innerHTML=list.slice(0,3).map(card).join('')+
+      (list.length>3?'<button type="button" class="btn secondary" onclick="show(\'certs\')">All certificates ('+list.length+')</button>':'');
+  }
+  if(full){
+    if(!list.length)full.innerHTML='<p style="color:#71717a;font-size:.9rem">No certificates yet. Complete a course: final chapter pass at '+MASTERY_MIN+'% or better.</p>';
+    else full.innerHTML=list.map(card).join('');
   }
 }
 function renderGradeUI(){
@@ -833,9 +1057,16 @@ function renderGradeUI(){
     rev.innerHTML=(g.needsReview&&g.needsReview.length)?g.needsReview.map(function(x){return '<li>'+esc(x)+'</li>'}).join(''):'<li style="color:#71717a">none right now</li>';
   }
   if(last){
-    banner.textContent=prog.unlockedThrough>=BOOKS[cur].ch.length-1
-      ? 'Last chapter — tell '+BOOKS[cur].teacher+' when you want a final check.'
-      : 'Last chapter with '+BOOKS[cur].teacher+'.';
+    var hasCert=loadCerts().some(function(c){return c.bookId===cur});
+    if(hasCert){
+      banner.textContent='🏅 Course mastery certified — view under Certificates.';
+    }else if(g&&g.pass&&g.score>=MASTERY_MIN){
+      banner.textContent='Mastery score met — certificate should appear under Certificates.';
+    }else if(g&&g.pass){
+      banner.textContent='Course complete at '+g.score+'%. Mastery certificate needs '+MASTERY_MIN+'+% — try Am I ready? again.';
+    }else{
+      banner.textContent='Final chapter — pass at '+MASTERY_MIN+'+% with '+BOOKS[cur].teacher+' for a Certificate of Course Mastery.';
+    }
   }else if(isUnlocked(chi+1)){
     banner.textContent='Next chapter is open — nice work with '+BOOKS[cur].teacher+'.';
   }else{
@@ -850,7 +1081,7 @@ function setPace(p){
   document.getElementById('paceFast').className=p==='fast'?'on':'';
 }
 function show(which){
-  ['home','reader','journal','books','curriculum'].forEach(function(id){
+  ['home','reader','journal','books','curriculum','certs'].forEach(function(id){
     var el=document.getElementById(id);
     if(!el)return;
     if(id===which)el.classList.remove('hidden');else el.classList.add('hidden');
@@ -860,7 +1091,7 @@ function show(which){
   if(tabC)tabC.className='tab'+(which==='curriculum'?' on':'');
   document.getElementById('tabJournal').className='tab'+(which==='journal'?' on':'');
   document.getElementById('tabBooks').className='tab'+(which==='books'?' on':'');
-  if(which==='reader'){
+  if(which==='reader'||which==='certs'){
     document.getElementById('tabHome').className='tab';
     if(tabC)tabC.className='tab';
     document.getElementById('tabJournal').className='tab';
@@ -871,6 +1102,7 @@ function show(which){
     renderCustomBooksUI();
     setCurrMode(currMode||'create');
   }
+  if(which==='certs'||which==='home')renderCertsUI();
   window.scrollTo(0,0);
 }
 function goHome(){show('home');cur=null}
@@ -1476,11 +1708,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 
 renderCustomBooksUI();
 renderBuiltinCatalog();
+renderCertsUI();
 
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v15';
+  var VER='v16';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

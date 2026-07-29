@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>TEACHAiD</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#0a0a0f;color:#e4e4e7;line-height:1.55;min-height:100vh;padding-bottom:72px}
+.wrap{max-width:480px;margin:0 auto;padding:16px}
+.logo{text-align:center;padding:24px 0 12px}
+.logo h1{font-size:1.7rem;font-weight:800;margin-top:10px;letter-spacing:.04em}
+.logo h1 span{color:#00ffd1}
+.logo p{color:#a1a1aa;font-size:.9rem;margin-top:4px}
+.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#71717a;font-weight:700;margin:18px 0 8px}
+.card{background:#12121a;border:1px solid #2a2a3a;border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.card:hover{border-color:#00ffd1}
+.tag{display:inline-block;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:6px;background:rgba(34,197,94,.15);color:#22c55e}
+.card h3{font-size:1rem;margin-bottom:2px}
+.card p{font-size:.8rem;color:#a1a1aa}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #2a2a3a;margin-bottom:12px;position:sticky;top:0;background:#0a0a0f;z-index:5}
+.topbar button{background:none;border:none;color:#00ffd1;font-size:1.25rem;cursor:pointer;padding:4px 8px}
+.topbar h2{font-size:1.05rem;flex:1}
+.pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;margin-bottom:8px}
+.pill{flex-shrink:0;background:#1a1a24;border:1px solid #2a2a3a;color:#a1a1aa;padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:600;cursor:pointer}
+.pill.on{background:rgba(0,255,209,.12);border-color:#00ffd1;color:#00ffd1}
+.lesson h2{font-size:1.3rem;margin-bottom:4px}
+.lesson .meta{font-size:.75rem;color:#71717a;margin-bottom:12px}
+.lesson p{margin-bottom:10px;color:#d4d4d8;font-size:.95rem}
+.lesson ul{margin:6px 0 12px 1.2rem;color:#d4d4d8}
+.callout{border-radius:10px;padding:12px;margin:12px 0;border:1px solid;font-size:.88rem}
+.callout.idea{background:rgba(0,255,209,.06);border-color:rgba(0,255,209,.25)}
+.callout.try{background:rgba(163,255,18,.06);border-color:rgba(163,255,18,.25)}
+.callout.teacher{background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.3)}
+.callout-title{font-weight:700;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.idea .callout-title{color:#00ffd1}.try .callout-title{color:#a3ff12}.teacher .callout-title{color:#60a5fa}
+.widget{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:14px;margin:12px 0}
+.widget-title{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#71717a;margin-bottom:10px}
+input[type=range]{width:100%;accent-color:#00ffd1}
+.big{font-size:2.2rem;font-weight:700;text-align:center;color:#a3ff12;padding:6px 0}
+.dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:30px}
+.dot{width:16px;height:16px;border-radius:50%;background:#00ffd1}
+.game-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.game-btns button{background:#1a1a24;border:1px solid #2a2a3a;color:#e4e4e7;padding:10px 16px;border-radius:10px;font-size:1rem;font-weight:700;min-width:48px;cursor:pointer}
+.game-btns button.ok{background:rgba(34,197,94,.2);border-color:#22c55e;color:#22c55e}
+.game-btns button.bad{background:rgba(239,68,68,.15);border-color:#ef4444;color:#ef4444}
+.items{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:50px;margin:10px 0;font-size:1.6rem}
+.msg{text-align:center;margin-top:8px;min-height:1.3rem;font-size:.95rem}
+.msg.ok{color:#22c55e}.msg.bad{color:#ef4444}
+.bits{display:flex;gap:8px;justify-content:center;margin:12px 0}
+.bit{width:44px;height:44px;display:grid;place-items:center;border-radius:8px;font-family:ui-monospace,monospace;font-weight:700;font-size:1.1rem;cursor:pointer}
+.bit.on{background:#00ffd1;color:#000}.bit.off{background:#27272a;color:#71717a}
+.nav-row{display:flex;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid #2a2a3a}
+.nav-row button{flex:1;background:#1a1a24;border:1px solid #2a2a3a;color:#e4e4e7;padding:12px;border-radius:10px;font-size:.9rem;cursor:pointer}
+.nav-row button:disabled{opacity:.35}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:#12121a;border-top:1px solid #2a2a3a;display:flex;max-width:480px;margin:0 auto;padding:6px 0 calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+.tab{flex:1;background:none;border:none;color:#71717a;font-size:.65rem;font-weight:600;padding:6px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab span{font-size:1.2rem}.tab.on{color:#00ffd1}
+.j-card{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:.72rem;color:#71717a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+select,textarea,input[type=text]{width:100%;background:#0a0a0f;border:1px solid #2a2a3a;color:#e4e4e7;padding:10px;border-radius:8px;font-size:.9rem;font-family:inherit;margin-bottom:10px}
+textarea{min-height:60px}
+.btn{width:100%;background:#00ffd1;color:#000;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
+.entry{border-left:3px solid #00ffd1;padding:10px 12px;margin-bottom:10px;background:#1a1a24;border-radius:0 8px 8px 0;font-size:.88rem}
+.entry .m{font-size:.72rem;color:#71717a;margin-bottom:4px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="home" class="wrap">
+<div class="logo">
+<div style="font-size:4rem;line-height:1">📚</div>
+<h1>TEACH<span>AiD</span></h1>
+<p>Learn by doing · Ask anything</p>
+</div>
+<div class="label">Start here — complete beginners</div>
+<div class="card" onclick="openBook('s1')"><span class="tag">START 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p></div>
+<div class="card" onclick="openBook('s2')"><span class="tag">START 02</span><h3>Positive & Negative</h3><p>Number line and negative numbers</p></div>
+<div class="card" onclick="openBook('s3')"><span class="tag">START 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p></div>
+<div class="label">Next level</div>
+<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(59,130,246,.15);color:#3b82f6">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p></div>
+</div>
+<div id="reader" class="wrap hidden">
+<div class="topbar"><button onclick="goHome()">←</button><h2 id="btitle">Book</h2></div>
+<div class="pills" id="pills"></div>
+<div class="lesson" id="lesson"></div>
+<div class="nav-row">
+<button id="prevB" onclick="prevCh()">← Prev</button>
+<button id="nextB" onclick="nextCh()">Next →</button>
+</div>
+</div>
+<div id="journal" class="wrap hidden">
+<div class="topbar"><h2>Learning Journal</h2></div>
+<div class="j-card">
+<label>Book</label>
+<select id="jBook">
+<option>Start 01 · Counting</option>
+<option>Start 02 · Positive & Negative</option>
+<option>Start 03 · Computers</option>
+<option>Computing · Integers</option>
+<option>Other</option>
+</select>
+<label>What I understand</label>
+<textarea id="jU" placeholder="One sentence…"></textarea>
+<label>Still unclear</label>
+<textarea id="jC" placeholder="Be specific"></textarea>
+<label>Question for teacher</label>
+<input type="text" id="jQ" placeholder="e.g. Why do we need zero?">
+<button class="btn" onclick="saveJ()">Save</button>
+</div>
+<div class="label">Your entries</div>
+<div id="jList"><p style="color:#71717a;font-size:.9rem">None yet.</p></div>
+</div>
+<div id="ask" class="wrap hidden">
+<div class="topbar"><h2>Ask your teacher</h2></div>
+<div class="callout teacher">
+<div class="callout-title">How it works</div>
+Stop anytime and ask your AI teacher in the chat where you opened TEACHAiD.
+<ul style="margin-top:8px;margin-bottom:0">
+<li>“I don’t understand negative numbers”</li>
+<li>“Show me another bit example”</li>
+<li>“What should I learn next?”</li>
+</ul>
+</div>
+</div>
+<nav class="tabbar">
+<button class="tab on" id="tabHome" onclick="show('home')"><span>🏠</span>Home</button>
+<button class="tab" id="tabJournal" onclick="show('journal')"><span>📓</span>Journal</button>
+<button class="tab" id="tabAsk" onclick="show('ask')"><span>💬</span>Ask</button>
+</nav>
+<script>
+var BOOKS={s1:{title:"Counting",ch:[{n:"Hello",h:"<h2>Hello</h2><div class='meta'>No prior knowledge needed</div><p>This is the first book. We start with <strong>counting</strong>.</p><div class='callout teacher'><div class='callout-title'>Your AI teacher</div>Go to Ask or the chat anytime. No silly questions.</div>"},{n:"What is counting?",h:"<h2>What is counting?</h2><p>Counting matches things to names:</p><p style='text-align:center;font-size:1.5rem;letter-spacing:.2em;margin:12px 0'>🍎 🍎 🍎</p><p style='text-align:center;color:#a1a1aa'>one · two · three</p><div class='callout idea'><div class='callout-title'>Simple idea</div>Counting answers: How many?</div>"},{n:"Numbers",h:"<h2>Numbers as names</h2><p>The number <strong>5</strong> is the name for any group of five things.</p><div class='widget'><div class='widget-title'>Make a number</div><input type='range' id='dr' min='0' max='12' value='3' oninput='updDots()'><div class='big' id='bn'>3</div><div class='dots' id='db'></div></div>"},{n:"Zero",h:"<h2>Zero</h2><p>What if there are no apples? We still need a name.</p><p style='text-align:center;font-size:1.4rem;color:#f59e0b;margin:12px 0'><strong>0</strong> · zero</p><div class='callout idea'><div class='callout-title'>Important</div>Zero means none. It is a real number.</div>"},{n:"Game",h:"<h2>Game · How many?</h2><div class='widget'><div class='widget-title'>Count the items</div><p style='text-align:center;color:#a1a1aa;font-size:.85rem'>Score: <strong id='gs' style='color:#a3ff12'>0</strong> / <span id='gt'>0</span></p><div class='items' id='gi'></div><div class='game-btns' id='gb'></div><div class='msg' id='gm'></div><button class='btn' style='margin-top:10px;background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a' onclick='gNew()'>New round</button></div>"}]},s2:{title:"Positive & Negative",ch:[{n:"Welcome",h:"<h2>Welcome</h2><p>You can count 0, 1, 2, 3… Now numbers can also go the other way: <strong>negative numbers</strong>.</p>"},{n:"Positive",h:"<h2>Positive numbers</h2><p style='text-align:center;color:#22c55e;letter-spacing:.12em;margin:12px 0'>1 · 2 · 3 · 4 · 5 · …</p><p>Amounts greater than zero.</p>"},{n:"Number line",h:"<h2>The number line</h2><p>Zero in the middle. Positive right. Negative left.</p><div class='widget'><div class='widget-title'>Move</div><input type='range' id='lr' min='-8' max='8' value='2' oninput='updLine()'><div class='big' id='lb' style='color:#22c55e'>2</div></div>"},{n:"Negative",h:"<h2>Negative numbers</h2><ul><li>+3 = three steps right · −3 = three steps left</li><li>+5° above zero · −5° below</li><li>+2 dollars you have · −2 you owe</li></ul>"},{n:"Check",h:"<h2>Quick check</h2><div class='widget'><p style='margin-bottom:8px'>Which is a negative number?</p><button class='btn' style='margin-bottom:8px;background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a' onclick='this.style.borderColor=\"#ef4444\"'>7</button><button class='btn' style='margin-bottom:8px;background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a' onclick='this.style.borderColor=\"#22c55e\";this.textContent=\"−4 ✓\"'>−4</button><button class='btn' style='background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a' onclick='this.style.borderColor=\"#ef4444\"'>0</button></div>"}]},s3:{title:"How Computers Count",ch:[{n:"Welcome",h:"<h2>Welcome</h2><p>Computers count with only two states: <strong>off</strong> and <strong>on</strong>.</p>"},{n:"Bits",h:"<h2>Bits</h2><p>One two-state piece is a <strong>bit</strong>.</p><ul><li><strong>0</strong> = off</li><li><strong>1</strong> = on</li></ul><div class='widget'><div class='widget-title'>Tap to flip</div><div class='bits' id='dbits'></div></div>"},{n:"Counting",h:"<h2>Counting with bits</h2><p style='font-family:ui-monospace,monospace;text-align:center;line-height:1.8;font-size:.9rem'>000 → 0 &nbsp; 001 → 1 &nbsp; 010 → 2<br>011 → 3 &nbsp; 100 → 4 &nbsp; 101 → 5</p><div class='callout idea'><div class='callout-title'>Key idea</div>Computers store patterns of bits. Those patterns are our numbers.</div>"},{n:"Game",h:"<h2>Game · Make the number</h2><div class='widget'><div class='widget-title'>Match the target</div><p style='text-align:center'>Target: <strong id='bt' style='color:#00ffd1;font-size:1.3rem'>5</strong></p><div class='bits' id='gbits'></div><p style='text-align:center;color:#a1a1aa'>Current: <strong id='bv' style='color:#e4e4e7'>0</strong></p><div class='msg' id='bm'></div><button class='btn' style='margin-top:10px;background:#1a1a24;color:#e4e4e7;border:1px solid #2a2a3a' onclick='bNew()'>New target</button></div><div class='callout try'><div class='callout-title'>Beginner path complete</div>Go Home and open Computing, or ask your teacher what’s next.</div>"}]},c1:{title:"Integers to Codes",ch:[{n:"Welcome",h:"<h2>From Integers to Codes</h2><p>Most codes speak <strong>positive integers</strong>. This book shows why and how we map any integer to a positive one.</p>"},{n:"Integers",h:"<h2>Integers</h2><p>Whole numbers: … −2, −1, 0, 1, 2 …</p><p>Positive > 0. Negative < 0. Zero is neither.</p>"},{n:"Mapping",h:"<h2>Map any integer → positive</h2><p style='font-family:ui-monospace,monospace;text-align:center;margin:12px 0'>n > 0 → 2n<br>n ≤ 0 → −2n + 1</p><div class='widget'><div class='widget-title'>Try</div><input type='range' id='mr' min='-8' max='8' value='-3' oninput='updMap()'><p style='text-align:center;margin-top:8px' id='mo'></p></div>"},{n:"Why",h:"<h2>Why it matters</h2><p>Data becomes sequences of positive integers, then those integers are encoded.</p><div class='callout idea'><div class='callout-title'>Pattern</div>Transform → positive integers → integer code.</div>"}]}};
+var cur=null,chi=0;
+function show(which){['home','reader','journal','ask'].forEach(function(id){var el=document.getElementById(id);if(id===which)el.classList.remove('hidden');else el.classList.add('hidden')});document.getElementById('tabHome').className='tab'+(which==='home'?' on':'');document.getElementById('tabJournal').className='tab'+(which==='journal'?' on':'');document.getElementById('tabAsk').className='tab'+(which==='ask'?' on':'');if(which==='reader'){document.getElementById('tabHome').className='tab';document.getElementById('tabJournal').className='tab';document.getElementById('tabAsk').className='tab'}if(which==='journal')renderJ();window.scrollTo(0,0)}
+function goHome(){show('home');cur=null}
+function openBook(id){cur=id;chi=0;document.getElementById('btitle').textContent=BOOKS[id].title;renderCh();show('reader')}
+function renderCh(){var b=BOOKS[cur],c=b.ch[chi],pills=document.getElementById('pills');pills.innerHTML='';for(var i=0;i<b.ch.length;i++){var p=document.createElement('button');p.className='pill'+(i===chi?' on':'');p.textContent=b.ch[i].n;(function(idx){p.onclick=function(){chi=idx;renderCh()}})(i);pills.appendChild(p)}document.getElementById('lesson').innerHTML=c.h;document.getElementById('prevB').disabled=chi===0;document.getElementById('nextB').disabled=chi===b.ch.length-1;setTimeout(initW,30);window.scrollTo(0,0)}
+function prevCh(){if(chi>0){chi--;renderCh()}}
+function nextCh(){if(chi<BOOKS[cur].ch.length-1){chi++;renderCh()}}
+function initW(){if(document.getElementById('dr'))updDots();if(document.getElementById('lr'))updLine();if(document.getElementById('gi'))gNew();if(document.getElementById('dbits'))dBits();if(document.getElementById('gbits'))bNew();if(document.getElementById('mr'))updMap()}
+function updDots(){var n=+document.getElementById('dr').value;document.getElementById('bn').textContent=n;var box=document.getElementById('db');box.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot';box.appendChild(d)}}
+function updLine(){var v=+document.getElementById('lr').value;var el=document.getElementById('lb');el.textContent=v;el.style.color=v>0?'#22c55e':v<0?'#ef4444':'#f59e0b'}
+function updMap(){var n=+document.getElementById('mr').value;var m=n>0?2*n:-2*n+1;document.getElementById('mo').textContent='n = '+n+'  →  mapped = '+m}
+var E=['🍎','⭐','🔵','🟢','🟣','🟡'],gs=0,gt=0,ga=0;
+function gNew(){if(!document.getElementById('gi'))return;ga=Math.floor(Math.random()*8)+1;var em=E[Math.floor(Math.random()*E.length)];var box=document.getElementById('gi');box.innerHTML='';for(var i=0;i<ga;i++)box.innerHTML+='<span>'+em+'</span>';var opts={};opts[ga]=1;while(Object.keys(opts).length<4)opts[Math.floor(Math.random()*9)]=1;var arr=Object.keys(opts).map(Number).sort(function(a,b){return a-b});var btns=document.getElementById('gb');btns.innerHTML='';arr.forEach(function(n){var b=document.createElement('button');b.textContent=n;b.onclick=function(){gPick(b,n)};btns.appendChild(b)});document.getElementById('gm').textContent='';document.getElementById('gm').className='msg'}
+function gPick(btn,n){var btns=document.querySelectorAll('#gb button');for(var i=0;i<btns.length;i++)btns[i].onclick=null;gt++;var msg=document.getElementById('gm');if(n===ga){gs++;btn.className='ok';msg.textContent='✓ Correct!';msg.className='msg ok'}else{btn.className='bad';msg.textContent='Answer was '+ga;msg.className='msg bad'}document.getElementById('gs').textContent=gs;document.getElementById('gt').textContent=gt;setTimeout(gNew,900)}
+var ds=[0,0,0,0];
+function dBits(){var box=document.getElementById('dbits');if(!box)return;box.innerHTML='';ds.forEach(function(b,i){var d=document.createElement('div');d.className='bit '+(b?'on':'off');d.textContent=b;d.onclick=function(){ds[i]=1-ds[i];dBits()};box.appendChild(d)})}
+var bs=[0,0,0,0],btarg=5;
+function bVal(){return bs[0]*8+bs[1]*4+bs[2]*2+bs[3]}
+function bRender(){var box=document.getElementById('gbits');if(!box)return;box.innerHTML='';bs.forEach(function(b,i){var d=document.createElement('div');d.className='bit '+(b?'on':'off');d.textContent=b;d.onclick=function(){bs[i]=1-bs[i];bRender();bCheck()};box.appendChild(d)});document.getElementById('bv').textContent=bVal()}
+function bCheck(){if(bVal()===btarg){document.getElementById('bm').textContent='✓ Perfect!';document.getElementById('bm').className='msg ok';setTimeout(bNew,800)}else{document.getElementById('bm').textContent='';document.getElementById('bm').className='msg'}}
+function bNew(){if(!document.getElementById('gbits'))return;btarg=Math.floor(Math.random()*15)+1;bs=[0,0,0,0];document.getElementById('bt').textContent=btarg;document.getElementById('bm').textContent='';bRender()}
+var JK='teachaid_j_v1';
+function loadJ(){try{return JSON.parse(localStorage.getItem(JK)||'[]')}catch(e){return[]}}
+function saveJ(){var e={d:new Date().toLocaleString(),b:document.getElementById('jBook').value,u:document.getElementById('jU').value.trim(),c:document.getElementById('jC').value.trim(),q:document.getElementById('jQ').value.trim()};if(!e.u&&!e.c&&!e.q){alert('Write at least one field');return}var a=loadJ();a.push(e);localStorage.setItem(JK,JSON.stringify(a));document.getElementById('jU').value='';document.getElementById('jC').value='';document.getElementById('jQ').value='';renderJ()}
+function renderJ(){var a=loadJ().reverse();var box=document.getElementById('jList');if(!a.length){box.innerHTML='<p style="color:#71717a;font-size:.9rem">None yet.</p>';return}box.innerHTML=a.map(function(e){return '<div class="entry"><div class="m">'+e.d+' · '+e.b+'</div><p><strong>Understood:</strong> '+(e.u||'—')+'</p><p><strong>Unclear:</strong> '+(e.c||'—')+'</p><p><strong>Question:</strong> '+(e.q||'—')+'</p></div>'}).join('')}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){})}
+show('home');
+</script>
+</body>
+</html>

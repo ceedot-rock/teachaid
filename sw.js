@@ -1,5 +1,5 @@
-/* teachaid-v23 — network-first shell; never cache API */
-const CACHE = 'teachaid-v23';
+/* teachaid-v26 — network-first shell; inject path-ui; never cache API */
+const CACHE = 'teachaid-v26';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -17,9 +17,15 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+function injectPathUi(html) {
+  if (/lib\/path-ui\.js/.test(html)) return html;
+  const tag = '<script src="lib/path-ui.js"></script>';
+  if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, tag + '</body>');
+  return html + tag;
+}
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' && !new URL(req.url).pathname.startsWith('/api/')) return;
   const url = new URL(req.url);
   if (url.pathname.startsWith('/api/')) {
     e.respondWith(fetch(req));
@@ -28,12 +34,37 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
 
   const isNav = req.mode === 'navigate';
-  const isShell =
+  const isHtml =
     isNav ||
     url.pathname === '/' ||
-    url.pathname.endsWith('.html') ||
-    url.pathname.endsWith('sw.js') ||
-    url.pathname.endsWith('manifest.webmanifest');
+    url.pathname.endsWith('/') ||
+    url.pathname.endsWith('index.html') ||
+    url.pathname.endsWith('.html');
+
+  if (isHtml) {
+    e.respondWith(
+      fetch(req)
+        .then(async (res) => {
+          const ct = res.headers.get('content-type') || '';
+          if (!ct.includes('text/html') && !isNav) return res;
+          const text = await res.text();
+          const patched = injectPathUi(text);
+          return new Response(patched, {
+            status: res.status,
+            statusText: res.statusText,
+            headers: {
+              'Content-Type': 'text/html; charset=utf-8',
+              'Cache-Control': 'no-store',
+            },
+          });
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  const isShell =
+    url.pathname.endsWith('sw.js') || url.pathname.endsWith('manifest.webmanifest');
 
   if (isShell) {
     e.respondWith(
@@ -43,7 +74,7 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
           return res;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+        .catch(() => caches.match(req))
     );
     return;
   }

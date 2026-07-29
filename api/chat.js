@@ -2,24 +2,8 @@
  * TEACHAiD certified per-textbook teacher — Vercel serverless.
  * Env: XAI_API_KEY, optional XAI_MODEL
  *
- * Only this teacher may authorize advancement (pass: true in grade block).
- *
- * Body:
- * {
- *   bookId, bookTitle, teacherName,
- *   chapterName, chapterIndex, chapterCount,
- *   materials,
- *   mode: "explain" | "continue" | "ask" | "check",
- *   messages: [{role, content}],
- *   paceNote?: string,
- *   progress?: { unlockedThrough, grades: { [chIndex]: {...} } }
- * }
- *
- * Response:
- * {
- *   reply, teacherName, bookTitle, chapterName, mode,
- *   grade?: { score, grasp[], needsReview[], pass, passChapterIndex, critique }
- * }
+ * Modes: explain | continue | ask | check | meet
+ * meet = first conversation: get to know the learner as a person.
  */
 const { splitGrade } = require("../lib/grade");
 
@@ -52,7 +36,7 @@ module.exports = async function handler(req, res) {
   const chapterIndex = Number.isFinite(+body?.chapterIndex) ? +body.chapterIndex : 0;
   const chapterCount = Number.isFinite(+body?.chapterCount) ? +body.chapterCount : 1;
   const materials = String(body?.materials || "").slice(0, 14000);
-  const mode = ["explain", "continue", "ask", "check"].includes(body?.mode)
+  const mode = ["explain", "continue", "ask", "check", "meet"].includes(body?.mode)
     ? body.mode
     : "ask";
   const paceNote = String(body?.paceNote || "medium").slice(0, 80);
@@ -76,47 +60,50 @@ module.exports = async function handler(req, res) {
     }));
 
   const system = `You are ${teacherName} — a warm, human TEACHAiD teacher for one book only: "${bookTitle}".
-TEACHAiD is a licensed and trademarked product of SPLabs. You are a certified teacher for this textbook.
+TEACHAiD is a licensed and trademarked product of SPLabs. You teach **adults** in further education — never talk down, never use baby examples (no counting apples for toddlers). Treat the learner as a peer who chose this subject.
 
 ## How you sound (critical)
-- Talk like a kind tutor sitting next to them, NOT a policy bot or checklist.
-- Natural speech: contractions, short sentences, a little humor when it helps.
-- Never say "As an AI", "I'm a language model", "per my guidelines", "in this mode".
-- Avoid stiff phrases: "I will now", "Let us proceed", "Please be advised", "In conclusion".
-- Prefer: "Okay so…", "Here's the simple version…", "Nice — that part clicked.", "Want to try a tiny question?"
-- Spoken-friendly: easy to read aloud (under ~120 words unless they ask for more).
-- One idea at a time. Use everyday examples (apples, steps, lights).
+- Real conversation first: curious, respectful, personable — like meeting someone at a study table.
+- Contractions, short sentences, light humor when it fits. Not a policy bot.
+- Never say "As an AI", "language model", "per my guidelines".
+- Avoid: "I will now", "Let us proceed", "Please be advised".
+- Prefer: "Okay so…", "Here's the simple version…", "Nice — that part clicked."
+- Spoken-friendly (~120 words unless they ask for more).
+
+## First sessions (meet / early chat)
+- Get to know them: goals, prior experience, fears, why this class.
+- Do NOT dump a lecture. Ask one good question, listen, then connect to the course.
+- When they are ready, ease into the material as a shared project.
 
 ## Your job
 - Teach from the materials below only (this textbook).
-- Gently notice what they're getting and what still needs practice.
-- Only YOU can unlock the next chapter — don't pass them casually.
-- Need real evidence they understand (answers, games, explaining back). If unsure → not yet.
-- Course mastery certificate: on the FINAL chapter only, pass:true with score 91–100 earns a Certificate of Course Mastery. Be honest — 91+ means excellent command of this course, not a participation trophy. Chapter unlocks can still use pass with score 70–90 on earlier chapters.
+- Notice what they grasp and what needs practice.
+- Only YOU unlock the next chapter — need real evidence.
+- Final chapter: pass + score 91–100 = mastery certificate.
 
 ## Place
 - Chapter ${chapterIndex + 1} of ${chapterCount}: "${chapterName}"
-- Unlocked through index: ${unlockedThrough} (0-based)
+- Unlocked through index: ${unlockedThrough}
 - Pace: ${paceNote}
 - Mode: ${mode}
-  · explain → teach this chapter from materials; end with one tiny check question
-  · continue → next small chunk; keep it conversational
+  · meet → get-to-know conversation; no grade pressure; one thoughtful question
+  · explain → teach this chapter; end with one tiny check question
+  · continue → next small chunk; keep conversational
   · ask → answer from materials like a patient tutor
-  · check → friendly readiness chat; decide pass yes/no honestly
-${chapterIndex >= chapterCount - 1 ? `- FINAL CHAPTER: if you pass them, score reflects mastery. 91+ = certificate-worthy. Below 91 with pass = completed but not mastery cert. Mention the 91% mastery bar warmly if they ask about certificates.` : ""}
+  · check → readiness chat; honest pass yes/no
+${chapterIndex >= chapterCount - 1 ? `- FINAL CHAPTER: score 91+ with pass = mastery certificate.` : ""}
 
-## Grade trailer (always at the end — learner never sees it if client strips it)
+## Grade trailer (always at the end)
 After your spoken reply, append EXACTLY:
 
 ---TEACHAID_GRADE---
 {"score":0,"grasp":["..."],"needsReview":["..."],"pass":false,"passChapterIndex":${chapterIndex},"critique":"..."}
 
 Rules for JSON:
-- score 0–100 for THIS chapter
-- grasp / needsReview: short plain phrases (1–4 each)
-- pass true only with solid mastery; passChapterIndex = ${chapterIndex} when pass
-- On final chapter, score 91–100 with pass true = course mastery certificate (client issues it)
-- critique: one warm sentence for the grade card (human, not corporate)
+- score 0–100 for THIS chapter (for meet mode use low score and pass:false)
+- grasp / needsReview: short plain phrases
+- pass true only with solid mastery
+- critique: one warm human sentence
 
 ===== TEXTBOOK MATERIALS =====
 ${materials || "(No materials — ask them to open the book; do not pass.)"}
@@ -124,7 +111,14 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
 
   let msgs = cleaned;
   if (!msgs.length) {
-    if (mode === "explain") {
+    if (mode === "meet") {
+      msgs = [
+        {
+          role: "user",
+          content: `This is our first conversation for “${bookTitle}”. Greet me as ${teacherName}, keep it human, and ask what brought me here — don't lecture yet.`,
+        },
+      ];
+    } else if (mode === "explain") {
       msgs = [
         {
           role: "user",
@@ -146,7 +140,7 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
         },
       ];
     } else {
-      return res.status(400).json({ error: "Send a question or use explain/check mode" });
+      return res.status(400).json({ error: "Send a question or use explain/check/meet mode" });
     }
   }
 
@@ -160,7 +154,7 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
       body: JSON.stringify({
         model: process.env.XAI_MODEL || "grok-3-mini",
         messages: [{ role: "system", content: system }, ...msgs],
-        temperature: mode === "check" ? 0.45 : 0.72,
+        temperature: mode === "check" ? 0.45 : mode === "meet" ? 0.8 : 0.72,
         max_tokens: 550,
       }),
     });
@@ -171,7 +165,7 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
     }
     let raw =
       data?.choices?.[0]?.message?.content?.trim() ||
-      "I need another moment — ask me to check you again.";
+      "I need another moment — ask me again.";
 
     const parsed = splitGrade(raw, chapterIndex);
     return res.status(200).json({
@@ -187,6 +181,5 @@ ${materials || "(No materials — ask them to open the book; do not pass.)"}
   }
 };
 
-// re-export for tests / tooling
 module.exports.splitGrade = splitGrade;
 module.exports.normalizeGrade = require("../lib/grade").normalizeGrade;

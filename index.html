@@ -165,11 +165,11 @@ textarea{min-height:56px}
 
 <div class="j-card" id="voiceProCard" style="display:none">
   <p class="label" style="margin-top:0">Voice tiers · TEACHAiD / SPLabs</p>
-  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices, free, private, works offline after load.</p>
-  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro</strong> — choose neural voice models (OpenAI HD / ElevenLabs when configured). Unlock once on this device.</p>
-  <button class="btn" type="button" onclick="activatePro()">Activate Pro on this device</button>
-  <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic')">Stay on Basic</button>
-  <p class="voice-hint">Pro neural audio needs server keys (OPENAI_API_KEY or ELEVENLABS_API_KEY). Without them, Pro still unlocks extra browser voice styles.</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices: Auto, Soft, Clear, Warm. Free &amp; private.</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 once</strong> — pick neural voice models (Nova, Shimmer, Alloy, ElevenLabs…). Unlocks after Stripe checkout.</p>
+  <a class="btn" id="proCheckoutBtn" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03" style="display:block;text-align:center;text-decoration:none">Unlock Pro with Stripe · $9</a>
+  <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic');document.getElementById('voiceProCard').style.display='none'">Stay on Basic</button>
+  <p class="voice-hint">After payment you return here automatically. Pro is verified with Stripe before voices unlock.</p>
 </div>
 
 <p class="legal">TEACHAiD is a licensed and trademarked entity of <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>. Each book includes a certified teacher who unlocks the next chapter when you are ready.</p>
@@ -208,7 +208,7 @@ textarea{min-height:56px}
     <select id="voiceModel" onchange="onVoiceModelChange()"></select>
     <div class="tier-actions">
       <button type="button" id="tierToggleBtn" onclick="toggleTierUi()">Pro voices</button>
-      <a class="pro-btn" id="proBuyLink" href="#voice-pro" onclick="showVoicePro();return false">Get Pro</a>
+      <a class="pro-btn" id="proBuyLink" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03">Get Pro · $9</a>
     </div>
   </div>
   <div class="act-row">
@@ -347,7 +347,12 @@ var cur=null,chi=0,pace='medium';
 var histories={};
 var speakOn=true,recog=null,listening=false,audioEl=null;
 var TIER_KEY='teachaid_tier_v1', VOICE_KEY='teachaid_voice_model_v1';
+
+var PRO_PAY_LINK='https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03';
+var PRO_SESSION_KEY='teachaid_pro_session_v1';
+
 var tier=localStorage.getItem(TIER_KEY)||'basic';
+if(tier==='pro'&&!localStorage.getItem('teachaid_pro_session_v1')){tier='basic';localStorage.setItem(TIER_KEY,'basic');}
 var voiceModel=localStorage.getItem(VOICE_KEY)||'browser:auto';
 
 var PK='teachaid_progress_v1';
@@ -660,6 +665,11 @@ function onVoiceModelChange(){
   localStorage.setItem(VOICE_KEY,voiceModel);
 }
 function setTier(t){
+  if(t==='pro' && !localStorage.getItem(PRO_SESSION_KEY)){
+    // require paid session — open checkout UI
+    showVoicePro();
+    return;
+  }
   tier=(t==='pro')?'pro':'basic';
   localStorage.setItem(TIER_KEY,tier);
   if(!isPro() && (voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0||voiceModel==='browser:premium')){
@@ -668,19 +678,77 @@ function setTier(t){
   }
   fillVoiceSelect();
   var card=document.getElementById('voiceProCard');
-  if(card) card.style.display='none';
+  if(card && t==='basic') card.style.display='none';
   var hint=document.getElementById('voiceHint');
   if(hint) hint.textContent=isPro()
-    ? 'Pro: neural models when server keys are set · else premium on-device'
-    : 'Basic: strong on-device voice · upgrade for neural models';
+    ? 'Pro unlocked · pick a neural voice (falls back on-device if needed)'
+    : 'Basic · strong on-device voice · Get Pro for neural models ($9)';
 }
 function activatePro(){
-  setTier('pro');
-  voiceModel='openai:nova';
-  localStorage.setItem(VOICE_KEY,voiceModel);
+  /* only after Stripe verify stored PRO_SESSION_KEY */
+  if(!localStorage.getItem(PRO_SESSION_KEY)){showVoicePro();return}
+  tier='pro';
+  localStorage.setItem(TIER_KEY,'pro');
+  if(!voiceModel||voiceModel.indexOf('browser:')===0){
+    voiceModel='openai:nova';
+    localStorage.setItem(VOICE_KEY,voiceModel);
+  }
   fillVoiceSelect();
   var hint=document.getElementById('voiceHint');
-  if(hint) hint.textContent='Pro on · pick a neural voice above (falls back to browser if keys missing)';
+  if(hint) hint.textContent='Pro unlocked · choose a neural voice model';
+  var card=document.getElementById('voiceProCard');
+  if(card) card.style.display='none';
+}
+function startProCheckout(){
+  window.location.href=PRO_PAY_LINK;
+}
+async function verifyProSession(sessionId){
+  if(!sessionId||sessionId.indexOf('cs_')!==0)return false;
+  try{
+    var r=await fetch('/api/pro-verify?session_id='+encodeURIComponent(sessionId));
+    var d=await r.json().catch(function(){return{}});
+    if(r.ok&&d.ok&&d.pro){
+      localStorage.setItem(PRO_SESSION_KEY,sessionId);
+      activatePro();
+      var hint=document.getElementById('voiceHint');
+      if(hint) hint.textContent='Payment verified · Pro voices unlocked. Thank you!';
+      // clean URL
+      try{
+        var u=new URL(location.href);
+        u.searchParams.delete('pro_session');
+        u.searchParams.delete('session_id');
+        history.replaceState({},'',u.pathname+u.search+u.hash);
+      }catch(e){}
+      return true;
+    }
+    var hint2=document.getElementById('voiceHint');
+    if(hint2) hint2.textContent=d.error||'Payment not verified yet';
+    return false;
+  }catch(e){
+    var hint3=document.getElementById('voiceHint');
+    if(hint3) hint3.textContent='Could not verify payment — try again or contact support';
+    return false;
+  }
+}
+async function restoreProFromSession(){
+  var sid=localStorage.getItem(PRO_SESSION_KEY);
+  if(!sid)return;
+  // Trust prior verify offline; optional re-check when online
+  if(tier!=='pro'){
+    try{
+      var r=await fetch('/api/pro-verify?session_id='+encodeURIComponent(sid));
+      var d=await r.json().catch(function(){return{}});
+      if(r.ok&&d.ok&&d.pro){activatePro();return}
+      // if network says unpaid, drop pro
+      if(r.status===402||r.status===403){
+        localStorage.removeItem(PRO_SESSION_KEY);
+        setTier('basic');
+      }
+    }catch(e){
+      // offline: keep pro if previously set
+      if(localStorage.getItem(TIER_KEY)==='pro')activatePro();
+    }
+  }
 }
 function showVoicePro(){
   show('home');
@@ -924,8 +992,13 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
   }
 })();
 fillVoiceSelect();
-// honor ?pro=1 unlock
-if(/[?&]pro=1(?:&|$)/.test(location.search))activatePro();
+(async function(){
+  var params=new URLSearchParams(location.search);
+  var sid=params.get('pro_session')||params.get('session_id');
+  if(sid){ await verifyProSession(sid); }
+  else { await restoreProFromSession(); }
+  fillVoiceSelect();
+})();
 show('home');
 </script>
 </body>

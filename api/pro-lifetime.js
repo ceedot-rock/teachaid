@@ -1,15 +1,21 @@
 /**
  * TEACHAiD lifetime Pro unlock by email allowlist.
  * Env:
- *   TEACHAID_LIFETIME_EMAILS — comma-separated emails (case-insensitive)
+ *   TEACHAID_LIFETIME_EMAILS — comma-separated emails (optional extra)
  *   TEACHAID_LIFETIME_SECRET — optional HMAC secret; defaults to XAI_API_KEY slice
+ *
+ * Owner emails below are ALWAYS allowlisted (SPLabs founder / ops).
  *
  * POST { email }
  * → { ok, pro, lifetime, email, unlock }
- *
- * Client stores unlock + email; restore trusts allowlist re-check when online.
  */
 const crypto = require("crypto");
+
+/** Permanent Pro — SPLabs / TEACHAiD owners */
+const OWNER_EMAILS = [
+  "ceedotrock@gmail.com",
+  "ptasz13@hotmail.com",
+];
 
 function normEmail(e) {
   return String(e || "")
@@ -18,10 +24,11 @@ function normEmail(e) {
 }
 
 function allowlist() {
-  return String(process.env.TEACHAID_LIFETIME_EMAILS || "")
+  const fromEnv = String(process.env.TEACHAID_LIFETIME_EMAILS || "")
     .split(/[,;\s]+/)
     .map(normEmail)
     .filter(Boolean);
+  return [...new Set([...OWNER_EMAILS.map(normEmail), ...fromEnv])];
 }
 
 function sign(email) {
@@ -43,7 +50,6 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
 
   if (req.method === "GET") {
-    // status only — never list full emails publicly beyond count
     return res.status(200).json({
       ok: true,
       lifetime_slots: allowlist().length,
@@ -70,13 +76,6 @@ module.exports = async function handler(req, res) {
   }
 
   const list = allowlist();
-  if (!list.length) {
-    return res.status(503).json({
-      ok: false,
-      error: "Lifetime list not configured on server",
-    });
-  }
-
   if (!list.includes(email)) {
     return res.status(403).json({
       ok: false,
@@ -90,6 +89,7 @@ module.exports = async function handler(req, res) {
     ok: true,
     pro: true,
     lifetime: true,
+    owner: OWNER_EMAILS.map(normEmail).includes(email),
     email,
     unlock,
   });

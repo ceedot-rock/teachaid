@@ -32,9 +32,11 @@ Covers: grade gates (70% pass min), grade trailer parsing, chapter unlock, maste
 
 ## Contents
 
+- **Real GE-aligned path**: Bridge → Programming sequence → lower-division gen-ed (see `docs/CURRICULUM_ALIGNMENT.md`)  
 - **Foundations**: Counting → Positive & Negative → How Computers Count  
-- **Programming 101** (8 books): Integers to Codes → Program → Variables → Strings → Decisions → Loops → Functions → Lists & Capstone  
-- **College 101s** (26+): gen-ed, **AI 101**, AI/Human Cohesion, Cybersecurity, Data & Digital Literacy, Finance, Networking, Art, Literature, Intro to Law, and more  
+- **Programming 101** (8 books): full intro CS sequence units  
+- **College GE**: writing, oral, critical thinking, quant, physical/life science (incl. Physics, Env Sci), arts, humanities, social science, **Spanish**, **College Success**, **Health**, diversity, plus AI/tech electives  
+- Audit: `npm run curriculum-audit`  
 - **Student Campus**: share comments, quiz/test/chapter scores (and mastery) with classmates via Share / share codes  
 - **Student referral**: every account gets a **Student ID** (`TA-XXXXXXXX`); when a friend applies it, **both get 1 month free Pro** (referrer max **4 / calendar year**)  
 - **Curriculum tab**: **Create new** or **Add to existing** — upload `.txt` / `.md` / paste → Grok builds or appends chapters (on-device)  

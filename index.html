@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0b0b12">
+<meta name="theme-color" content="#09090f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="TEACHAiD is a licensed and trademarked entity of SPLabs. Textbook teachers who explain at your pace.">
@@ -489,13 +489,17 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 </header>
 
 <div id="home" class="wrap">
+<div class="teaser-card" style="cursor:default">
+  <h3>🎓 Real lower-division path</h3>
+  <p id="gePathNote">Bridge numeracy → Programming sequence → College gen-ed (writing, quant, science, arts, social science, health, language). Mastery certs at 91%+ on finals.</p>
+</div>
 <div class="teaser-card" onclick="show('curriculum')" role="button" tabindex="0">
   <h3>📚 Curriculum · load documents</h3>
   <p>Create a new textbook or add materials to an existing one. Certified teacher included.</p>
 </div>
 <div class="teaser-card" onclick="show('certs')" role="button" tabindex="0" style="border-color:rgba(251,191,36,.35)">
   <h3>🏅 Certificates of Course Mastery</h3>
-  <p>Earn when your teacher passes you at <strong style="color:#fbbf24">91% or better</strong> on the final chapter.</p>
+  <p>Earn when your teacher passes you at <strong style="color:#fbbf24">91% or better</strong> on the final chapter — full course outcomes, not participation.</p>
 </div>
 
 <p class="label">Your certificates</p>
@@ -751,6 +755,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 </nav>
 
 <script src="builtin-books.js"></script>
+<script src="curriculum-enrichment.js"></script>
 <script src="lib/mastery.js"></script>
 <script src="lib/student-referral.js"></script>
 <script>
@@ -786,26 +791,48 @@ function booksInTrack(trackId){
     .sort(function(a,b){return (BUILTIN_BOOKS[a].order||0)-(BUILTIN_BOOKS[b].order||0)});
 }
 
+function scopeLabel(b){
+  if(!b)return'';
+  if(b.scope==='bridge')return'Bridge';
+  if(b.scope==='sequence-unit')return'Sequence unit';
+  if(b.scope==='intro-course')return'Intro course';
+  if(b.scope==='enrichment')return'Elective';
+  return b.scope||'';
+}
 function builtinCardHtml(id,opts){
   opts=opts||{};
   var b=BUILTIN_BOOKS[id];
   if(!b)return'';
   var style=b.tagStyle?' style="'+b.tagStyle+'"':'';
   var tag=b.tag||'BOOK';
+  var scope=scopeLabel(b);
+  var chN=b.ch?b.ch.length:0;
+  var metaBits=[];
+  if(scope)metaBits.push(scope);
+  if(chN)metaBits.push(chN+' chapters');
+  if(b.creditHint)metaBits.push(b.creditHint);
+  var meta=metaBits.length?'<div class="ch-meta">'+esc(metaBits.join(' · '))+'</div>':'';
+  var lo=(b.outcomes&&b.outcomes.length)
+    ? '<p class="ch-meta" style="margin-top:8px;color:#9b9bb0">Outcomes: '+esc(b.outcomes.slice(0,2).join(' · '))+(b.outcomes.length>2?'…':'')+'</p>'
+    : '';
   var sub=opts.teacherLine
-    ? '<p>'+esc(b.teacherBlurb||b.card||'')+'</p>'
-    : '<p>'+esc(b.card||'')+'</p><div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>';
+    ? '<p>'+esc(b.teacherBlurb||b.card||'')+'</p>'+meta
+    : '<p>'+esc(b.card||'')+'</p>'+meta+'<div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>'+lo;
   if(opts.currLine){
-    sub='<p>Built-in · Teacher '+esc(b.teacher)+' · '+(b.ch?b.ch.length:0)+' ch</p>';
+    sub='<p>Teacher '+esc(b.teacher)+' · '+chN+' chapters'+(scope?' · '+esc(scope):'')+'</p>'+
+      (b.creditHint?'<div class="ch-meta">'+esc(b.creditHint)+'</div>':'');
   }
   if(opts.teachersOnly){
-    return '<div class="card" onclick="openBook(\''+id+'\')"><h3>'+esc(b.teacher)+' · '+esc(b.title)+'</h3><p>'+esc(b.teacherBlurb||'')+'</p></div>';
+    return '<div class="card" onclick="openBook(\''+id+'\')"><h3>'+esc(b.teacher)+' · '+esc(b.title)+'</h3><p>'+esc(b.teacherBlurb||'')+'</p>'+meta+'</div>';
   }
   return '<div class="card" onclick="openBook(\''+id+'\')"><span class="tag"'+style+'>'+esc(tag)+'</span><h3>'+esc(b.title)+'</h3>'+sub+'</div>';
 }
 
 function renderBuiltinCatalog(){
   var tracks=BUILTIN_TRACKS||[];
+  var geNote=typeof TEACHAID_GE_NOTE!=='undefined'?TEACHAID_GE_NOTE:'';
+  var noteEl=document.getElementById('gePathNote');
+  if(noteEl&&geNote)noteEl.textContent=geNote;
   function sectionHtml(mode){
     return tracks.map(function(tr){
       var ids=booksInTrack(tr.id);
@@ -815,7 +842,7 @@ function renderBuiltinCatalog(){
         if(mode==='curr')return builtinCardHtml(id,{currLine:true});
         return builtinCardHtml(id,{});
       }).join('');
-      var blurb=tr.blurb?'<p style="font-size:.75rem;color:#6b7280;margin:-4px 0 8px">'+esc(tr.blurb)+'</p>':'';
+      var blurb=tr.blurb?'<p style="font-size:.8rem;color:#9b9bb0;margin:-2px 0 12px;line-height:1.45">'+esc(tr.blurb)+'</p>':'';
       return '<p class="label">'+esc(tr.label)+'</p>'+blurb+cards;
     }).join('');
   }
@@ -823,7 +850,11 @@ function renderBuiltinCatalog(){
   var curr=document.getElementById('currCatalog');
   var teach=document.getElementById('teachersCatalog');
   if(home)home.innerHTML=sectionHtml('home');
-  if(curr)curr.innerHTML='<p class="label">Built-in library</p>'+sectionHtml('curr');
+  if(curr){
+    curr.innerHTML='<p class="label">Program library</p>'+
+      (geNote?'<p class="legal" style="text-align:left;margin:0 0 14px">'+esc(geNote)+'</p>':'')+
+      sectionHtml('curr');
+  }
   if(teach)teach.innerHTML=sectionHtml('teachers');
 }
 
@@ -1188,7 +1219,18 @@ var PK='teachaid_progress_v1';
 
 function materialsForBook(id){
   var b=BOOKS[id];if(!b)return'';
-  return b.ch.map(function(c,i){return '## Chapter '+(i+1)+': '+c.n+'\n'+c.t}).join('\n\n');
+  var head=[];
+  head.push('Course: '+b.title);
+  if(b.creditHint)head.push('Scope: '+b.creditHint);
+  if(b.scope)head.push('Module type: '+b.scope);
+  if(b.geBucket)head.push('Gen-ed bucket code: '+b.geBucket);
+  if(b.outcomes&&b.outcomes.length){
+    head.push('Learning outcomes:');
+    b.outcomes.forEach(function(o,i){head.push('  '+(i+1)+'. '+o)});
+  }
+  head.push('');
+  var body=b.ch.map(function(c,i){return '## Chapter '+(i+1)+': '+c.n+'\n'+c.t}).join('\n\n');
+  return head.join('\n')+body;
 }
 function histKey(){return cur||'_none'}
 function getHist(){var k=histKey();if(!histories[k])histories[k]=[];return histories[k]}
@@ -1704,6 +1746,12 @@ function openBook(id){
   renderChatFromHist(true);
   fillVoiceSelect();
   show('reader');
+  // Orient learner to real course outcomes once per open
+  if(b.outcomes&&b.outcomes.length&&!getHist().length){
+    var lo='This course aims for real outcomes: '+b.outcomes.slice(0,3).join('; ')+'.';
+    if(b.creditHint)lo+=' ('+b.creditHint+')';
+    addBubble('bot',lo+' Ask me to teach, then check when you are ready. Mastery certificate needs 91%+ on the final chapter.',false);
+  }
 }
 function renderChNavOnly(){
   if(!cur)return;
@@ -2533,7 +2581,7 @@ try{loadStudentAccount();renderReferralUI()}catch(e){}
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v19';
+  var VER='v21';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

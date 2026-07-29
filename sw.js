@@ -1,5 +1,5 @@
-/* teachaid-v20 — network-first shell; never cache API */
-const CACHE = 'teachaid-v20';
+/* teachaid-v21 — network-first shell; never cache API */
+const CACHE = 'teachaid-v21';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

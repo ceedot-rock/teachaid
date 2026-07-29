@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 // Load browser-style catalog into global
 require("../builtin-books.js");
+require("../curriculum-enrichment.js");
 const BOOKS = global.BUILTIN_BOOKS;
 const TRACKS = global.BUILTIN_TRACKS;
 
@@ -56,8 +57,34 @@ describe("builtin catalog", () => {
     }
   });
 
-  it("has at least 35 built-in books", () => {
-    assert.ok(Object.keys(BOOKS).length >= 35);
+  it("has at least 40 built-in books after enrichment", () => {
+    assert.ok(Object.keys(BOOKS).length >= 40);
+  });
+
+  it("covers new GE cores: success, health, physics, spanish, env, diversity", () => {
+    const titles = Object.values(BOOKS).map((b) => b.title);
+    [
+      "College Success 101",
+      "Health & Wellness 101",
+      "Physics 101",
+      "Spanish 101",
+      "Environmental Science 101",
+      "Diversity & Society 101",
+    ].forEach((t) => assert.ok(titles.includes(t), "missing " + t));
+  });
+
+  it("core GE books expose learning outcomes", () => {
+    ["col_eng", "col_alg", "col_psych", "col_success", "col_spanish"].forEach(
+      (id) => {
+        assert.ok(BOOKS[id], id);
+        assert.ok((BOOKS[id].outcomes || []).length >= 2, id + " outcomes");
+        assert.ok(BOOKS[id].geBucket, id + " geBucket");
+      }
+    );
+  });
+
+  it("expanded composition has 6+ chapters", () => {
+    assert.ok(BOOKS.col_eng.ch.length >= 6);
   });
 
   it("Programming 101 track has 8 books", () => {
@@ -72,7 +99,6 @@ describe("builtin catalog", () => {
     for (const id of Object.keys(BOOKS)) {
       const n = BOOKS[id].ch.length;
       assert.ok(n >= 1);
-      // mastery rule: chapterIndex === n - 1
       assert.equal(n - 1, n - 1);
     }
   });

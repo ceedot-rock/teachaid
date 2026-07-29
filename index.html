@@ -119,6 +119,8 @@ textarea{min-height:56px}
 .icon-btn.on{border-color:#f87171;color:#f87171}
 .icon-btn.speak-on{border-color:#5eead4;color:#5eead4}
 .voice-hint{font-size:.7rem;color:#6b7280;margin:8px 0 0;text-align:center}
+.hear-btn{margin-top:8px;font-size:.72rem;padding:4px 10px;border-radius:8px;border:1px solid #2a2a3c;background:#1a1a28;color:#5eead4;cursor:pointer}
+.hear-btn:active{opacity:.8}
 .done-box{text-align:center;margin-top:12px;padding:12px;border-radius:12px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3)}
 .done-box p{color:#6ee7b7;font-weight:700;margin-bottom:10px}
 .legal{text-align:center;font-size:.68rem;color:#6b7280;margin:18px 8px 8px;line-height:1.4}
@@ -603,6 +605,15 @@ function addBubble(role,text,store){
   var d=document.createElement('div');
   d.className='bubble '+(role==='user'?'user':role==='err'?'err':'bot');
   d.textContent=text;
+  if(role==='bot' && text){
+    var hb=document.createElement('button');
+    hb.type='button';
+    hb.className='hear-btn';
+    hb.textContent='▶ Hear';
+    hb.onclick=function(ev){ev.stopPropagation(); speak(text, true);};
+    d.appendChild(document.createElement('br'));
+    d.appendChild(hb);
+  }
   log.appendChild(d);
   log.scrollTop=log.scrollHeight;
 }
@@ -614,14 +625,14 @@ var BASIC_VOICES=[
   {id:'browser:warm',label:'Warm coach',tier:'basic'}
 ];
 var PRO_VOICES=[
-  {id:'openai:nova',label:'Neural · Nova',tier:'pro'},
+  {id:'browser:premium',label:'Pro on-device (recommended)',tier:'pro'},
+  {id:'openai:nova',label:'Cloud · Nova (needs API key)',tier:'pro'},
   {id:'openai:shimmer',label:'Neural · Shimmer',tier:'pro'},
   {id:'openai:alloy',label:'Neural · Alloy',tier:'pro'},
   {id:'openai:echo',label:'Neural · Echo',tier:'pro'},
   {id:'openai:fable',label:'Neural · Fable',tier:'pro'},
   {id:'openai:onyx',label:'Neural · Onyx',tier:'pro'},
-  {id:'elevenlabs:default',label:'Neural · ElevenLabs',tier:'pro'},
-  {id:'browser:premium',label:'Premium on-device',tier:'pro'}
+  {id:'elevenlabs:default',label:'Cloud · ElevenLabs (needs API key)',tier:'pro'}
 ];
 
 function isPro(){return tier==='pro'}
@@ -689,8 +700,9 @@ function activatePro(){
   if(!localStorage.getItem(PRO_SESSION_KEY)){showVoicePro();return}
   tier='pro';
   localStorage.setItem(TIER_KEY,'pro');
-  if(!voiceModel||voiceModel.indexOf('browser:')===0){
-    voiceModel='openai:nova';
+  // Default Pro to best on-device voice; user can pick neural if server supports it
+  if(!voiceModel || voiceModel.indexOf('openai:')===0 || voiceModel.indexOf('elevenlabs:')===0){
+    voiceModel='browser:premium';
     localStorage.setItem(VOICE_KEY,voiceModel);
   }
   fillVoiceSelect();
@@ -797,28 +809,54 @@ function pickVoice(style){
   }
   return pool[0];
 }
-function speakBrowser(text, style){
-  if(!window.speechSynthesis)return;
-  speechSynthesis.cancel();
-  var clean=String(text).replace(/\s+/g,' ').trim();
-  if(clean.length>600)clean=clean.slice(0,600)+'…';
-  // light pacing for natural speech
-  clean=clean.replace(/([.!?])\s+/g,'$1 ');
-  var u=new SpeechSynthesisUtterance(clean);
-  u.lang='en-US';
-  if(style==='soft'){u.rate=0.92;u.pitch=1.06}
-  else if(style==='clear'){u.rate=0.98;u.pitch=1.0}
-  else if(style==='warm'){u.rate=0.94;u.pitch=1.04}
-  else if(style==='premium'){u.rate=0.96;u.pitch=1.02}
-  else {
-    u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
-    u.pitch=1.02;
+function ensureVoices(cb){
+  if(!window.speechSynthesis){cb([]);return}
+  var v=speechSynthesis.getVoices()||[];
+  if(v.length){cb(v);return}
+  var done=false;
+  var finish=function(){
+    if(done)return; done=true;
+    cb(speechSynthesis.getVoices()||[]);
+  };
+  speechSynthesis.onvoiceschanged=finish;
+  setTimeout(finish, 400);
+}
+function speakBrowser(text, style, fromUserGesture){
+  if(!window.speechSynthesis){
+    var h=document.getElementById('voiceHint');
+    if(h) h.textContent='Speech not supported in this browser — read the text, or try Chrome.';
+    return;
   }
-  if(pace==='slow')u.rate=Math.min(u.rate,0.9);
-  if(pace==='fast')u.rate=Math.max(u.rate,1.0);
-  var v=pickVoice(style||'auto');
-  if(v)u.voice=v;
-  speechSynthesis.speak(u);
+  var clean=String(text).replace(/\s+/g,' ').trim();
+  if(!clean)return;
+  if(clean.length>700)clean=clean.slice(0,700)+'…';
+  ensureVoices(function(){
+    try{ speechSynthesis.cancel(); }catch(e){}
+    // Chrome bug: cancel then speak needs a tick
+    setTimeout(function(){
+      var u=new SpeechSynthesisUtterance(clean);
+      u.lang='en-US';
+      if(style==='soft'){u.rate=0.92;u.pitch=1.06}
+      else if(style==='clear'){u.rate=0.98;u.pitch=1.0}
+      else if(style==='warm'){u.rate=0.94;u.pitch=1.04}
+      else if(style==='premium'){u.rate=0.96;u.pitch=1.02}
+      else {
+        u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
+        u.pitch=1.02;
+      }
+      if(pace==='slow')u.rate=Math.min(u.rate,0.9);
+      if(pace==='fast')u.rate=Math.max(u.rate,1.0);
+      var v=pickVoice(style||'auto');
+      if(v){u.voice=v; if(v.lang) u.lang=v.lang}
+      u.onerror=function(ev){
+        var h=document.getElementById('voiceHint');
+        if(h) h.textContent='Voice blocked — tap ▶ Hear under the message';
+      };
+      speechSynthesis.speak(u);
+      // Some mobile browsers need resume
+      if(speechSynthesis.paused) try{speechSynthesis.resume()}catch(e){}
+    }, fromUserGesture?0:60);
+  });
 }
 async function speakNeural(text, model){
   var r=await fetch('/api/tts',{
@@ -838,18 +876,21 @@ async function speakNeural(text, model){
   audioEl.onended=function(){URL.revokeObjectURL(url)};
   await audioEl.play();
 }
-async function speak(text){
+async function speak(text, fromUserGesture){
   if(!speakOn)return;
   var model=voiceModel||'browser:auto';
   try{
+    // Neural only if Pro AND model is cloud AND user gesture preferred for audio.play
     if(isPro() && (model.indexOf('openai:')===0 || model.indexOf('elevenlabs:')===0)){
       try{
         await speakNeural(text, model);
+        var hint=document.getElementById('voiceHint');
+        if(hint) hint.textContent='Playing Pro neural voice';
         return;
       }catch(e){
-        var hint=document.getElementById('voiceHint');
-        if(hint) hint.textContent='Neural unavailable — using Basic on-device voice';
-        speakBrowser(text, 'premium');
+        var hint2=document.getElementById('voiceHint');
+        if(hint2) hint2.textContent='Neural not available yet — using on-device teacher voice. Tap ▶ Hear if silent.';
+        speakBrowser(text, 'premium', !!fromUserGesture);
         return;
       }
     }
@@ -858,8 +899,11 @@ async function speak(text){
     else if(model==='browser:clear')style='clear';
     else if(model==='browser:warm')style='warm';
     else if(model==='browser:premium')style='premium';
-    speakBrowser(text, style);
-  }catch(e){}
+    speakBrowser(text, style, !!fromUserGesture);
+  }catch(e){
+    var h=document.getElementById('voiceHint');
+    if(h) h.textContent='Tap ▶ Hear under the teacher message';
+  }
 }
 if(window.speechSynthesis){
   speechSynthesis.onvoiceschanged=function(){pickVoice('auto')};
@@ -935,8 +979,11 @@ async function callTeacher(mode,userLine){
     var reply=data.reply||'…';
     getHist().push({role:'assistant',content:reply});
     addBubble('bot',reply,false);
-    speak(reply);
+    // Auto-speak may be blocked after async fetch — ▶ Hear always available
+    speak(reply, false);
     if(data.grade)applyGrade(data.grade);
+    var vh=document.getElementById('voiceHint');
+    if(vh && speakOn) vh.textContent='If you hear nothing, tap ▶ Hear under the reply (browser security).';
   }catch(e){
     addBubble('err','Network error: '+(e.message||'failed')+'. XAI_API_KEY on Vercel (nektaronbase-cells-projects / teachaid).',false);
   }finally{
@@ -947,6 +994,13 @@ async function callTeacher(mode,userLine){
 
 async function teacherAction(mode){
   if(!cur)return;
+  // Unlock audio pipeline on user gesture
+  try{
+    if(window.speechSynthesis){
+      var warm=new SpeechSynthesisUtterance(' ');
+      warm.volume=0; speechSynthesis.speak(warm); speechSynthesis.cancel();
+    }
+  }catch(e){}
   var line;
   if(mode==='explain')line='Teach me “'+BOOKS[cur].ch[chi].n+'” at a '+pace+' pace — friendly and clear.';
   else if(mode==='continue')line='Keep going at '+pace+' pace.';
@@ -969,7 +1023,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 /* Force fresh app after deploy — unregister stale SWs then register v6 */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v8';
+  var VER='v9';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));
@@ -979,7 +1033,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=8');
+      return navigator.serviceWorker.register('./sw.js?v=9');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -988,7 +1042,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=8').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=9').catch(function(){});
   }
 })();
 fillVoiceSelect();

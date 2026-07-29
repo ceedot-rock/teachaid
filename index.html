@@ -37,6 +37,16 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#0a0a0
 .pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;margin-bottom:8px}
 .pill{flex-shrink:0;background:#1a1a24;border:1px solid #2a2a3a;color:#a1a1aa;padding:5px 12px;border-radius:999px;font-size:.75rem;font-weight:600;cursor:pointer}
 .pill.on{background:rgba(0,255,209,.12);border-color:#00ffd1;color:#00ffd1}
+.pill.locked{opacity:.45;cursor:not-allowed;border-style:dashed}
+.pill.passed{border-color:rgba(34,197,94,.5);color:#86efac}
+.grade-box{background:#0a0f14;border:1px solid #2a2a3a;border-radius:12px;padding:10px 12px;margin:8px 0 10px;font-size:.82rem}
+.grade-box h4{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:#71717a;margin-bottom:6px}
+.grade-score{font-size:1.35rem;font-weight:800;color:#a3ff12}
+.grade-score.low{color:#f59e0b}.grade-score.fail{color:#f87171}
+.grade-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.grade-cols ul{margin:4px 0 0 1rem;color:#d4d4d8;font-size:.78rem}
+.grade-cols .g{color:#86efac}.grade-cols .r{color:#fca5a5}
+.lock-banner{font-size:.78rem;color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:8px 10px;margin:8px 0 0}
 .lesson h2{font-size:1.3rem;margin-bottom:4px}
 .lesson .meta{font-size:.75rem;color:#71717a;margin-bottom:12px}
 .lesson p{margin-bottom:10px;color:#d4d4d8;font-size:.95rem}
@@ -109,14 +119,14 @@ textarea{min-height:60px}
 <div class="logo">
 <div style="font-size:4rem;line-height:1">📚</div>
 <h1>TEACH<span>AiD</span></h1>
-<p>Each book comes with its own teacher</p>
+<p>Certified teachers grade you · only they pass you on</p>
 </div>
 <div class="label">Start here — complete beginners</div>
-<div class="card" onclick="openBook('s1')"><span class="tag">START 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">👩‍🏫 Teacher: Mira · knows this book</div></div>
-<div class="card" onclick="openBook('s2')"><span class="tag">START 02</span><h3>Positive & Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">🧑‍🏫 Teacher: Nova · knows this book</div></div>
-<div class="card" onclick="openBook('s3')"><span class="tag">START 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">👨‍💻 Teacher: Bit · knows this book</div></div>
+<div class="card" onclick="openBook('s1')"><span class="tag">START 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">👩‍🏫 Certified: Mira · grades &amp; unlocks chapters</div></div>
+<div class="card" onclick="openBook('s2')"><span class="tag">START 02</span><h3>Positive & Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">🧑‍🏫 Certified: Nova · grades &amp; unlocks chapters</div></div>
+<div class="card" onclick="openBook('s3')"><span class="tag">START 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">👨‍💻 Certified: Bit · grades &amp; unlocks chapters</div></div>
 <div class="label">Next level</div>
-<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(59,130,246,.15);color:#3b82f6">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">🧭 Teacher: Codex · knows this book</div></div>
+<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(59,130,246,.15);color:#3b82f6">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">🧭 Certified: Codex · grades &amp; unlocks chapters</div></div>
 </div>
 
 <div id="reader" class="wrap hidden">
@@ -130,7 +140,17 @@ textarea{min-height:60px}
     <div class="teach-avatar" id="tAvatar">T</div>
     <div>
       <strong id="tName">Teacher</strong>
-      <span id="tRole">Your guide for this textbook</span>
+      <span id="tRole">Certified TEACHAiD teacher for this textbook</span>
+    </div>
+  </div>
+  <div class="lock-banner" id="lockBanner">Only this certified teacher can unlock the next chapter.</div>
+  <div class="grade-box" id="gradeBox">
+    <h4>Live grade · this chapter</h4>
+    <div><span class="grade-score" id="gradeScore">—</span> <span style="color:#71717a;font-size:.75rem" id="gradePassLabel">not graded yet</span></div>
+    <p id="gradeCritique" style="color:#a1a1aa;margin-top:6px;font-size:.8rem">Learn with your teacher, then request a pass check.</p>
+    <div class="grade-cols">
+      <div><strong class="g">Grasping</strong><ul id="gradeGrasp"><li style="color:#71717a">—</li></ul></div>
+      <div><strong class="r">Needs review</strong><ul id="gradeReview"><li style="color:#71717a">—</li></ul></div>
     </div>
   </div>
   <div class="pace">
@@ -139,17 +159,18 @@ textarea{min-height:60px}
     <button type="button" id="paceFast" onclick="setPace('fast')">Faster</button>
   </div>
   <div class="act-row">
-    <button type="button" class="btn row" onclick="teacherAction('explain')">📖 Explain this chapter</button>
+    <button type="button" class="btn row" onclick="teacherAction('explain')">📖 Explain</button>
     <button type="button" class="btn row secondary" onclick="teacherAction('continue')">⏭ Continue</button>
+    <button type="button" class="btn row secondary" onclick="teacherAction('check')">✅ Pass check</button>
   </div>
   <div class="chat-log" id="chatLog"></div>
   <div class="chat-row">
     <button type="button" class="icon-btn" id="micBtn" title="Voice input" onclick="toggleMic()">🎤</button>
     <button type="button" class="icon-btn speak-on" id="speakBtn" title="Speak answers" onclick="toggleSpeak()">🔊</button>
-    <input type="text" id="chatIn" placeholder="Ask about this chapter…" autocomplete="off" enterkeyhint="send">
+    <input type="text" id="chatIn" placeholder="Answer a check or ask…" autocomplete="off" enterkeyhint="send">
   </div>
-  <button class="btn" id="sendBtn" style="margin-top:10px" onclick="sendChat()">Ask my teacher</button>
-  <p class="voice-hint" id="voiceHint">Teacher only uses <em>this</em> book’s materials. Mic needs HTTPS.</p>
+  <button class="btn" id="sendBtn" style="margin-top:10px" onclick="sendChat()">Ask / answer teacher</button>
+  <p class="voice-hint" id="voiceHint">Certified teachers only. Next chapter stays locked until you pass their check.</p>
 </div>
 
 <div class="nav-row">
@@ -184,8 +205,8 @@ textarea{min-height:60px}
 <div id="books" class="wrap hidden">
 <div class="topbar"><h2>Book teachers</h2></div>
 <div class="callout teacher">
-<div class="callout-title">One teacher per textbook</div>
-Open a book — that book’s teacher reads its materials, explains at your pace, and answers only from that book.
+<div class="callout-title">Certified teachers only</div>
+Each textbook has a certified TEACHAiD teacher. They grade what you’re grasping vs what needs review. <strong>Only they can pass you to the next chapter.</strong>
 </div>
 <div class="card" onclick="openBook('s1')"><h3>Mira · Counting</h3><p>Patient counting & zero</p></div>
 <div class="card" onclick="openBook('s2')"><h3>Nova · Positive & Negative</h3><p>Number line coach</p></div>
@@ -276,6 +297,7 @@ var cur=null,chi=0,pace='medium';
 /** per-book chat histories */
 var histories={};
 var speakOn=true,recog=null,listening=false;
+var PK='teachaid_progress_v1';
 
 function materialsForBook(id){
   var b=BOOKS[id];if(!b)return'';
@@ -283,6 +305,85 @@ function materialsForBook(id){
 }
 function histKey(){return cur||'_none'}
 function getHist(){var k=histKey();if(!histories[k])histories[k]=[];return histories[k]}
+function loadAllProgress(){try{return JSON.parse(localStorage.getItem(PK)||'{}')}catch(e){return{}}}
+function saveAllProgress(all){localStorage.setItem(PK,JSON.stringify(all))}
+function getProgress(bookId){
+  var all=loadAllProgress();
+  if(!all[bookId])all[bookId]={unlockedThrough:0,grades:{}};
+  if(typeof all[bookId].unlockedThrough!=='number')all[bookId].unlockedThrough=0;
+  if(!all[bookId].grades)all[bookId].grades={};
+  return all[bookId];
+}
+function setProgress(bookId,prog){
+  var all=loadAllProgress();
+  all[bookId]=prog;
+  saveAllProgress(all);
+}
+function isUnlocked(idx){
+  if(!cur)return false;
+  return idx<=getProgress(cur).unlockedThrough;
+}
+function applyGrade(grade){
+  if(!cur||!grade)return;
+  var prog=getProgress(cur);
+  prog.grades[String(chi)]={
+    score:grade.score,
+    grasp:grade.grasp||[],
+    needsReview:grade.needsReview||[],
+    critique:grade.critique||'',
+    pass:!!grade.pass,
+    at:new Date().toISOString()
+  };
+  if(grade.pass===true && grade.passChapterIndex===chi){
+    // unlock next chapter
+    var next=chi+1;
+    if(next>prog.unlockedThrough)prog.unlockedThrough=next;
+  }
+  setProgress(cur,prog);
+  renderGradeUI();
+  renderChNavOnly();
+  if(grade.pass && chi<BOOKS[cur].ch.length-1){
+    document.getElementById('lockBanner').textContent='✅ Passed! Next chapter unlocked by '+BOOKS[cur].teacher+'.';
+  }
+}
+function renderGradeUI(){
+  if(!cur)return;
+  var g=getProgress(cur).grades[String(chi)];
+  var scoreEl=document.getElementById('gradeScore');
+  var passEl=document.getElementById('gradePassLabel');
+  var crit=document.getElementById('gradeCritique');
+  var grasp=document.getElementById('gradeGrasp');
+  var rev=document.getElementById('gradeReview');
+  var banner=document.getElementById('lockBanner');
+  var prog=getProgress(cur);
+  var last=chi>=BOOKS[cur].ch.length-1;
+  if(!g){
+    scoreEl.textContent='—';
+    scoreEl.className='grade-score';
+    passEl.textContent='not graded yet';
+    crit.textContent='Learn with your certified teacher, then request a pass check. Next chapter stays locked until they pass you.';
+    grasp.innerHTML='<li style="color:#71717a">—</li>';
+    rev.innerHTML='<li style="color:#71717a">—</li>';
+  }else{
+    scoreEl.textContent=g.score;
+    scoreEl.className='grade-score'+(g.score>=80?'':g.score>=70?' low':' fail');
+    passEl.textContent=g.pass?'PASSED this chapter':'needs more work';
+    passEl.style.color=g.pass?'#86efac':'#fbbf24';
+    crit.textContent=g.critique||'';
+    grasp.innerHTML=(g.grasp&&g.grasp.length)?g.grasp.map(function(x){return '<li>'+esc(x)+'</li>'}).join(''):'<li style="color:#71717a">—</li>';
+    rev.innerHTML=(g.needsReview&&g.needsReview.length)?g.needsReview.map(function(x){return '<li>'+esc(x)+'</li>'}).join(''):'<li style="color:#71717a">none right now</li>';
+  }
+  if(last){
+    banner.textContent=prog.unlockedThrough>=BOOKS[cur].ch.length-1
+      ? 'Book complete when your teacher is satisfied with this last chapter.'
+      : 'Final chapter — certified teacher still grades you here.';
+  }else if(isUnlocked(chi+1)){
+    banner.textContent='✅ Next chapter unlocked by certified teacher '+BOOKS[cur].teacher+'.';
+  }else{
+    banner.textContent='🔒 Only certified teacher '+BOOKS[cur].teacher+' can pass you to the next chapter.';
+  }
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function setPace(p){
   pace=p;
   document.getElementById('paceSlow').className=p==='slow'?'on':'';
@@ -308,55 +409,91 @@ function show(which){
 function goHome(){show('home');cur=null}
 function finishBook(){goHome()}
 function openBook(id){
-  cur=id;chi=0;
+  cur=id;
+  // Resume at furthest unlocked chapter (or 0)
+  var prog=getProgress(id);
+  chi=Math.min(prog.unlockedThrough,BOOKS[id].ch.length-1);
   var b=BOOKS[id];
   document.getElementById('btitle').textContent=b.title;
-  document.getElementById('tName').textContent=b.teacher;
-  document.getElementById('tRole').textContent=b.teacherBlurb;
+  document.getElementById('tName').textContent=b.teacher+' · certified';
+  document.getElementById('tRole').textContent=b.teacherBlurb+' Grades you; unlocks next chapter.';
   document.getElementById('tAvatar').textContent=b.avatar||b.teacher.charAt(0);
   renderCh();
   renderChatFromHist(true);
   show('reader');
 }
-function renderCh(){
-  var b=BOOKS[cur],c=b.ch[chi],pills=document.getElementById('pills');
+function renderChNavOnly(){
+  if(!cur)return;
+  var b=BOOKS[cur],pills=document.getElementById('pills');
   pills.innerHTML='';
+  var prog=getProgress(cur);
   for(var i=0;i<b.ch.length;i++){
     var p=document.createElement('button');
-    p.className='pill'+(i===chi?' on':'');
-    p.textContent=b.ch[i].n;
-    (function(idx){p.onclick=function(){chi=idx;renderCh();noteChapterChange()}})(i);
+    var unlocked=isUnlocked(i);
+    var passed=!!(prog.grades[String(i)]&&prog.grades[String(i)].pass);
+    p.className='pill'+(i===chi?' on':'')+(!unlocked?' locked':'')+(passed?' passed':'');
+    p.textContent=(!unlocked?'🔒 ':'')+b.ch[i].n;
+    (function(idx,ok){
+      p.onclick=function(){
+        if(!ok){
+          addBubble('bot',BOOKS[cur].teacher+': That chapter is locked. Work with me here until I pass you on.',false);
+          return;
+        }
+        chi=idx;renderCh();noteChapterChange();
+      };
+    })(i,unlocked);
     pills.appendChild(p);
   }
-  document.getElementById('lesson').innerHTML=c.h;
-  document.getElementById('prevB').disabled=chi===0;
   var last=chi===b.ch.length-1;
   var nextB=document.getElementById('nextB');
+  document.getElementById('prevB').disabled=chi===0||!isUnlocked(chi-1);
   if(last){
     nextB.textContent='Home →';
     nextB.disabled=false;
     nextB.onclick=function(){finishBook()};
-  }else{
+  }else if(isUnlocked(chi+1)){
     nextB.textContent='Next →';
     nextB.disabled=false;
     nextB.onclick=function(){nextCh()};
+  }else{
+    nextB.textContent='🔒 Locked';
+    nextB.disabled=true;
+    nextB.onclick=function(){};
   }
-  document.getElementById('chatIn').placeholder='Ask '+b.teacher+' about “'+c.n+'”…';
+}
+function renderCh(){
+  var b=BOOKS[cur],c=b.ch[chi];
+  if(!isUnlocked(chi)){
+    // snap back if somehow on locked chapter
+    chi=getProgress(cur).unlockedThrough;
+    c=b.ch[chi];
+  }
+  renderChNavOnly();
+  document.getElementById('lesson').innerHTML=c.h;
+  document.getElementById('chatIn').placeholder='Answer '+b.teacher+' or ask about “'+c.n+'”…';
+  renderGradeUI();
   setTimeout(initW,30);
   window.scrollTo(0,0);
 }
 function noteChapterChange(){
-  /* soft marker so teacher knows place changed — not a full reset */
-  addBubble('bot',BOOKS[cur].teacher+': Now we are on “'+BOOKS[cur].ch[chi].n+'”. Say Explain, Continue, or ask a question.',false);
+  addBubble('bot',BOOKS[cur].teacher+': Now on “'+BOOKS[cur].ch[chi].n+'”. I’ll grade as we go. When ready, tap Pass check — only I can unlock the next chapter.',false);
+  renderGradeUI();
 }
-function prevCh(){if(chi>0){chi--;renderCh();noteChapterChange()}}
-function nextCh(){if(chi<BOOKS[cur].ch.length-1){chi++;renderCh();noteChapterChange()}}
+function prevCh(){
+  if(chi>0&&isUnlocked(chi-1)){chi--;renderCh();noteChapterChange()}
+}
+function nextCh(){
+  if(chi<BOOKS[cur].ch.length-1&&isUnlocked(chi+1)){chi++;renderCh();noteChapterChange()}
+  else{
+    addBubble('bot',BOOKS[cur].teacher+': Next chapter is locked until I pass you. Learn, answer my checks, then tap Pass check.',false);
+  }
+}
 function initW(){
   if(document.getElementById('dr'))updDots();
   if(document.getElementById('lr'))updLine();
-  if(document.getElementById('gi'))gReset(true);
+  if(document.getElementById('gi'))gReset();
   if(document.getElementById('dbits'))dBits();
-  if(document.getElementById('gbits'))bReset(true);
+  if(document.getElementById('gbits'))bReset();
   if(document.getElementById('mr'))updMap();
 }
 function updDots(){var n=+document.getElementById('dr').value;document.getElementById('bn').textContent=n;var box=document.getElementById('db');box.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot';box.appendChild(d)}}
@@ -394,7 +531,7 @@ function renderChatFromHist(welcome){
   var h=getHist();
   if(!h.length&&welcome&&cur){
     var b=BOOKS[cur];
-    addBubble('bot',"I'm "+b.teacher+", your teacher for “"+b.title+"”. I only use this book's materials. Pick a pace, tap Explain this chapter, or ask me anything about these pages.",false);
+    addBubble('bot',"I'm "+b.teacher+", your certified TEACHAiD teacher for “"+b.title+"”. I grade what you grasp and what needs review. Only I can pass you to the next chapter. Tap Explain, work with me, then Pass check.",false);
     return;
   }
   h.forEach(function(m){
@@ -462,6 +599,7 @@ function toggleMic(){
 function teacherPayload(mode,extraMessages){
   var b=BOOKS[cur];
   var c=b.ch[chi];
+  var prog=getProgress(cur);
   return {
     bookId:cur,
     bookTitle:b.title,
@@ -472,19 +610,19 @@ function teacherPayload(mode,extraMessages){
     materials:materialsForBook(cur),
     mode:mode,
     paceNote:pace,
+    progress:{unlockedThrough:prog.unlockedThrough,grades:prog.grades},
     messages:extraMessages||getHist()
   };
 }
 
-async function teacherAction(mode){
-  if(!cur)return;
+async function callTeacher(mode,userLine){
   var btn=document.getElementById('sendBtn');
-  btn.disabled=true;btn.textContent='Teaching…';
-  var userLine=mode==='explain'
-    ?('Please explain “'+BOOKS[cur].ch[chi].n+'” thoroughly at a '+pace+' pace.')
-    :('Continue from where we left off (pace: '+pace+').');
-  addBubble('user',userLine,false);
-  getHist().push({role:'user',content:userLine});
+  btn.disabled=true;
+  btn.textContent=mode==='check'?'Grading…':'Teaching…';
+  if(userLine){
+    addBubble('user',userLine,false);
+    getHist().push({role:'user',content:userLine});
+  }
   try{
     var r=await fetch('/api/chat',{
       method:'POST',
@@ -497,11 +635,22 @@ async function teacherAction(mode){
     getHist().push({role:'assistant',content:reply});
     addBubble('bot',reply,false);
     speak(reply);
+    if(data.grade)applyGrade(data.grade);
   }catch(e){
-    addBubble('err','Network error: '+(e.message||'failed')+'. Set XAI_API_KEY on Vercel (nektaronbase-cells-projects / teachaid).',false);
+    addBubble('err','Network error: '+(e.message||'failed')+'. XAI_API_KEY on Vercel (nektaronbase-cells-projects / teachaid).',false);
   }finally{
-    btn.disabled=false;btn.textContent='Ask my teacher';
+    btn.disabled=false;
+    btn.textContent='Ask / answer teacher';
   }
+}
+
+async function teacherAction(mode){
+  if(!cur)return;
+  var line;
+  if(mode==='explain')line='Please explain “'+BOOKS[cur].ch[chi].n+'” thoroughly at a '+pace+' pace, and grade what I grasp.';
+  else if(mode==='continue')line='Continue teaching at '+pace+' pace and keep grading me.';
+  else line='Certified pass check: grade what I’m grasping vs what needs review for “'+BOOKS[cur].ch[chi].n+'”. Only pass me if I’m ready for the next chapter.';
+  await callTeacher(mode,line);
 }
 
 async function sendChat(){
@@ -510,27 +659,7 @@ async function sendChat(){
   var text=(input.value||'').trim();
   if(!text)return;
   input.value='';
-  addBubble('user',text,false);
-  getHist().push({role:'user',content:text});
-  var btn=document.getElementById('sendBtn');
-  btn.disabled=true;btn.textContent='Thinking…';
-  try{
-    var r=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(teacherPayload('ask',getHist()))
-    });
-    var data=await r.json().catch(function(){return{}});
-    if(!r.ok){addBubble('err',data.error||('HTTP '+r.status),false);return}
-    var reply=data.reply||'…';
-    getHist().push({role:'assistant',content:reply});
-    addBubble('bot',reply,false);
-    speak(reply);
-  }catch(e){
-    addBubble('err','Network error: '+(e.message||'failed'),false);
-  }finally{
-    btn.disabled=false;btn.textContent='Ask my teacher';
-  }
+  await callTeacher('ask',text);
 }
 document.getElementById('chatIn').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();sendChat()}

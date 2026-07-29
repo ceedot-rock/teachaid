@@ -25,9 +25,10 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 - Beginner path: Counting → Positive & Negative → How Computers Count  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  
-- **One teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book’s materials only  
-- **Explain this chapter** / **Continue** at Slow · My pace · Faster  
-- Questions + voice (mic + spoken answers)  
+- **Certified teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book only  
+- **Grades throughout**: score, grasping, needs review  
+- **Chapter lock**: only the certified teacher can pass you to the next chapter  
+- Explain / Continue / Pass check · pace · voice  
 
 ## Server env (Vercel team: nektaronbase-cells-projects)
 

@@ -135,6 +135,22 @@ textarea{min-height:56px}
 .tier-actions button,.tier-actions a{font-size:.68rem;padding:5px 8px;border-radius:8px;border:1px solid #2a2a3c;background:#1a1a28;color:#e8e8ed;cursor:pointer;text-decoration:none}
 .tier-actions a.pro-btn{background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#1a1200;border:none;font-weight:700}
 
+.upload-card{background:#14141f;border:1px solid #2a2a3c;border-radius:14px;padding:14px 15px;margin-bottom:14px}
+.upload-card .label{margin-top:0}
+.upload-card p.hint{font-size:.8rem;color:#9ca3af;margin:0 0 10px;line-height:1.4}
+.upload-card textarea{min-height:88px;margin-bottom:8px}
+.upload-card input[type=text],.upload-card input[type=file]{width:100%;margin-bottom:8px}
+.upload-card input[type=file]{font-size:.78rem;color:#9ca3af;padding:8px 0}
+.upload-status{font-size:.78rem;color:#94a3b8;min-height:1.2em;margin:6px 0 0}
+.upload-status.err{color:#fca5a5}
+.upload-status.ok{color:#6ee7b7}
+.custom-list{margin-top:4px}
+.card.custom{border-color:rgba(251,191,36,.35)}
+.card.custom .tag{background:rgba(251,191,36,.12);color:#fbbf24}
+.card-row{display:flex;align-items:flex-start;gap:8px}
+.card-row .card-main{flex:1;min-width:0;cursor:pointer}
+.card .del-btn{flex-shrink:0;background:#1a1a28;border:1px solid #3a2a2a;color:#fca5a5;border-radius:8px;padding:6px 10px;font-size:.72rem;cursor:pointer;margin-top:2px}
+
 </style>
 </head>
 <body>
@@ -158,6 +174,22 @@ textarea{min-height:56px}
 </header>
 
 <div id="home" class="wrap">
+<div class="upload-card" id="loadDocCard">
+  <p class="label">Load document → curriculum</p>
+  <p class="hint">Upload notes, a lesson outline, or paste text. TEACHAiD builds chapters and assigns a certified teacher for that book.</p>
+  <label for="docTitle">Optional title</label>
+  <input type="text" id="docTitle" placeholder="e.g. Intro to Fractions" autocomplete="off"/>
+  <label for="docFile">File (.txt, .md, .csv, .html)</label>
+  <input type="file" id="docFile" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,text/plain,text/markdown,text/html"/>
+  <label for="docPaste">Or paste materials</label>
+  <textarea id="docPaste" placeholder="Paste lesson notes, worksheet text, or a study guide…"></textarea>
+  <button class="btn" type="button" id="buildCurrBtn" onclick="buildCurriculumFromUpload()">Build curriculum</button>
+  <p class="upload-status" id="uploadStatus"></p>
+</div>
+
+<p class="label">Your books</p>
+<div class="custom-list" id="customBooksHome"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — load a document above.</p></div>
+
 <p class="label">Start here</p>
 <div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">Teacher Mira</div></div>
 <div class="card" onclick="openBook('s2')"><span class="tag">BOOK 02</span><h3>Positive &amp; Negative</h3><p>Number line and negative numbers</p><div class="teacher-pill">Teacher Nova</div></div>
@@ -262,6 +294,7 @@ textarea{min-height:56px}
 <div id="books" class="wrap hidden">
 <div class="topbar"><h2>Teachers</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Each textbook has its own tutor. They teach that book only, notice what you are getting, and unlock the next chapter when you are ready. TEACHAiD · SPLabs.</p>
+<div id="customTeachersList"></div>
 <div class="card" onclick="openBook('s1')"><h3>Mira · Counting</h3><p>Patient counting &amp; zero</p></div>
 <div class="card" onclick="openBook('s2')"><h3>Nova · Positive &amp; Negative</h3><p>Number line coach</p></div>
 <div class="card" onclick="openBook('s3')"><h3>Bit · How Computers Count</h3><p>Bits &amp; patterns</p></div>
@@ -276,7 +309,7 @@ textarea{min-height:56px}
 
 <script>
 /* Curriculum: html for UI + plain text for the book's teacher */
-var BOOKS={
+var BUILTIN_BOOKS={
 s1:{
   title:"Counting",
   teacher:"Mira",
@@ -346,6 +379,207 @@ c1:{
   ]
 }
 };
+
+var CUSTOM_KEY='teachaid_custom_books_v1';
+var BOOKS={};
+
+function loadCustomBooks(){
+  try{return JSON.parse(localStorage.getItem(CUSTOM_KEY)||'{}')}catch(e){return{}}
+}
+function saveCustomBooks(map){
+  localStorage.setItem(CUSTOM_KEY,JSON.stringify(map));
+}
+function mergeBooks(){
+  BOOKS={};
+  Object.keys(BUILTIN_BOOKS).forEach(function(k){BOOKS[k]=BUILTIN_BOOKS[k]});
+  var custom=loadCustomBooks();
+  Object.keys(custom).forEach(function(k){
+    var b=custom[k];
+    if(b&&b.ch&&b.ch.length)BOOKS[k]=b;
+  });
+}
+mergeBooks();
+
+function newCustomId(){
+  return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+}
+
+function setUploadStatus(msg,kind){
+  var el=document.getElementById('uploadStatus');
+  if(!el)return;
+  el.textContent=msg||'';
+  el.className='upload-status'+(kind?' '+kind:'');
+}
+
+function stripHtmlToText(html){
+  var d=document.createElement('div');
+  d.innerHTML=html;
+  return (d.textContent||d.innerText||'').replace(/\s+\n/g,'\n').trim();
+}
+
+function readUploadedFile(file){
+  return new Promise(function(resolve,reject){
+    if(!file)return resolve({text:'',filename:''});
+    var name=file.name||'upload';
+    var lower=name.toLowerCase();
+    if(/\.(pdf|docx?|pptx?|xlsx?|png|jpe?g|gif|webp|zip)$/i.test(lower)){
+      return reject(new Error('That file type needs text first — export/save as .txt or .md, or paste the content.'));
+    }
+    if(file.size>1.5*1024*1024){
+      return reject(new Error('File too large (max ~1.5 MB of text).'));
+    }
+    var reader=new FileReader();
+    reader.onload=function(){
+      var raw=String(reader.result||'');
+      if(/\.(html?|htm)$/i.test(lower))raw=stripHtmlToText(raw);
+      resolve({text:raw.trim(),filename:name});
+    };
+    reader.onerror=function(){reject(new Error('Could not read file'))};
+    reader.readAsText(file);
+  });
+}
+
+async function buildCurriculumFromUpload(){
+  var btn=document.getElementById('buildCurrBtn');
+  var paste=(document.getElementById('docPaste').value||'').trim();
+  var titleHint=(document.getElementById('docTitle').value||'').trim();
+  var fileInput=document.getElementById('docFile');
+  var file=fileInput&&fileInput.files&&fileInput.files[0];
+
+  setUploadStatus('Reading materials…','');
+  if(btn){btn.disabled=true;btn.textContent='Building…'}
+
+  try{
+    var fileData={text:'',filename:''};
+    if(file)fileData=await readUploadedFile(file);
+    var text=(fileData.text||'');
+    if(paste){
+      text=text?(text+'\n\n'+paste):paste;
+    }
+    text=text.trim();
+    if(text.length<40){
+      setUploadStatus('Add more text (paste or upload a .txt / .md file).','err');
+      return;
+    }
+    setUploadStatus('Building chapters with your teacher… this can take ~15–40s.','');
+    var r=await fetch('/api/curriculum',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        text:text.slice(0,48000),
+        filename:fileData.filename||'',
+        titleHint:titleHint,
+        audience:'complete beginners'
+      })
+    });
+    var data=await r.json().catch(function(){return{}});
+    if(!r.ok){
+      setUploadStatus(data.error||('HTTP '+r.status),'err');
+      return;
+    }
+    var book=data.book;
+    if(!book||!book.ch||!book.ch.length){
+      setUploadStatus('No chapters returned — try more structured notes.','err');
+      return;
+    }
+    book.custom=true;
+    if(data.source&&data.source.filename)book.sourceFile=data.source.filename;
+    book.createdAt=Date.now();
+
+    var id=newCustomId();
+    var map=loadCustomBooks();
+    map[id]=book;
+    saveCustomBooks(map);
+    mergeBooks();
+    renderCustomBooksUI();
+
+    document.getElementById('docPaste').value='';
+    document.getElementById('docTitle').value='';
+    if(fileInput)fileInput.value='';
+    setUploadStatus('Ready: “'+book.title+'” with teacher '+book.teacher+' · '+book.ch.length+' chapters. Opening…','ok');
+    openBook(id);
+  }catch(e){
+    setUploadStatus(e.message||'Build failed','err');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Build curriculum'}
+  }
+}
+
+function deleteCustomBook(id,ev){
+  if(ev){ev.stopPropagation();ev.preventDefault()}
+  if(!id||id.charAt(0)!=='u')return;
+  if(!confirm('Remove this custom book from this device?'))return;
+  var map=loadCustomBooks();
+  delete map[id];
+  saveCustomBooks(map);
+  var all=loadAllProgress();
+  delete all[id];
+  saveAllProgress(all);
+  delete histories[id];
+  mergeBooks();
+  renderCustomBooksUI();
+  if(cur===id)goHome();
+  setUploadStatus('Removed custom book.','');
+}
+
+function renderCustomBooksUI(){
+  var home=document.getElementById('customBooksHome');
+  var teach=document.getElementById('customTeachersList');
+  var map=loadCustomBooks();
+  var ids=Object.keys(map).sort(function(a,b){
+    return (map[b].createdAt||0)-(map[a].createdAt||0);
+  });
+  if(home){
+    if(!ids.length){
+      home.innerHTML='<p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — load a document above.</p>';
+    }else{
+      home.innerHTML=ids.map(function(id){
+        var b=map[id];
+        return '<div class="card-row">'+
+          '<div class="card custom card-main" onclick="openBook(\''+id+'\')">'+
+          '<span class="tag">YOUR BOOK</span>'+
+          '<h3>'+esc(b.title)+'</h3>'+
+          '<p>'+esc(b.summary||(b.ch.length+' chapters'))+'</p>'+
+          '<div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>'+
+          '</div>'+
+          '<button type="button" class="del-btn" onclick="deleteCustomBook(\''+id+'\',event)" title="Remove">✕</button>'+
+          '</div>';
+      }).join('');
+    }
+  }
+  if(teach){
+    teach.innerHTML=ids.map(function(id){
+      var b=map[id];
+      return '<div class="card custom" onclick="openBook(\''+id+'\')">'+
+        '<h3>'+esc(b.teacher)+' · '+esc(b.title)+'</h3>'+
+        '<p>'+esc(b.teacherBlurb||'Custom materials')+'</p></div>';
+    }).join('');
+  }
+  // Journal book options
+  var jBook=document.getElementById('jBook');
+  if(jBook){
+    var base=[
+      'Start 01 · Counting',
+      'Start 02 · Positive & Negative',
+      'Start 03 · Computers',
+      'Computing · Integers',
+      'Other'
+    ];
+    var extra=ids.map(function(id){return map[id].title+' (custom)'});
+    var curVal=jBook.value;
+    jBook.innerHTML=base.concat(extra).map(function(o){
+      return '<option>'+esc(o)+'</option>';
+    }).join('');
+    if(curVal)jBook.value=curVal;
+  }
+}
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
 
 var cur=null,chi=0,pace='medium';
 /** per-book chat histories */
@@ -472,6 +706,11 @@ function show(which){
 function goHome(){show('home');cur=null}
 function finishBook(){goHome()}
 function openBook(id){
+  if(!BOOKS[id]||!BOOKS[id].ch||!BOOKS[id].ch.length){
+    setUploadStatus('Book not found.','err');
+    show('home');
+    return;
+  }
   cur=id;
   // Resume at furthest unlocked chapter (or 0)
   var prog=getProgress(id);
@@ -479,7 +718,7 @@ function openBook(id){
   var b=BOOKS[id];
   document.getElementById('btitle').textContent=b.title;
   document.getElementById('tName').textContent=b.teacher;
-  document.getElementById('tRole').textContent=b.teacherBlurb;
+  document.getElementById('tRole').textContent=b.teacherBlurb||('Your tutor for '+b.title);
   document.getElementById('tAvatar').textContent=b.avatar||b.teacher.charAt(0);
   renderCh();
   renderChatFromHist(true);
@@ -1065,10 +1304,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();sendChat()}
 });
 
-/* Force fresh app after deploy — unregister stale SWs then register v6 */
+renderCustomBooksUI();
+
+/* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v11';
+  var VER='v12';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

@@ -23,12 +23,30 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 ## Contents
 
 - Beginner path: Counting → Positive & Negative → How Computers Count  
+- **Load document → curriculum**: upload `.txt` / `.md` / paste notes → Grok builds chapters + assigns a teacher (stored on device)  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  
 - **Certified teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book only  
 - **Grades throughout**: score, grasping, needs review  
 - **Chapter lock**: only the certified teacher can pass you to the next chapter  
 - Explain / Continue / Pass check · pace · voice  
+
+## Load document API
+
+`POST /api/curriculum` with JSON:
+
+```json
+{
+  "text": "…lesson materials…",
+  "filename": "optional.txt",
+  "titleHint": "optional title",
+  "audience": "complete beginners"
+}
+```
+
+Returns `{ book: { title, teacher, teacherBlurb, avatar, summary, ch: [{ n, h, t }] }, source }`.  
+Needs `XAI_API_KEY` (same as teacher chat).  
+
 
 ## Voice tiers
 

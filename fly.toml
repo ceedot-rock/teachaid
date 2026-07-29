@@ -1,0 +1,31 @@
+# TEACHAiD on Fly — https://teachaid.fly.dev
+# Custom domain: teachaid.agentmagnet.xyz (CNAME → teachaid.fly.dev)
+#
+# Deploy:
+#   flyctl deploy --config fly.toml --remote-only
+# Secrets:
+#   flyctl secrets set XAI_API_KEY=... STRIPE_RESTRICTED_KEY=... --app teachaid
+
+app = "teachaid"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  HOST = "0.0.0.0"
+  TEACHAID_PUBLIC_URL = "https://teachaid.fly.dev"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

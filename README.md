@@ -30,12 +30,25 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 - **Chapter lock**: only the certified teacher can pass you to the next chapter  
 - Explain / Continue / Pass check · pace · voice  
 
+## Voice tiers
+
+| Tier | Voices |
+|------|--------|
+| **Basic** (default) | Strong on-device teacher voices: Auto, Soft, Clear, Warm |
+| **Pro** | Choose neural models: OpenAI HD (Nova/Shimmer/…) or ElevenLabs; premium browser fallback |
+
+Unlock Pro on-device via **Voice** in the top bar (or `?pro=1`).
+
 ## Server env (Vercel team: nektaronbase-cells-projects)
 
 | Name | Required | Notes |
 |------|----------|--------|
-| `XAI_API_KEY` | yes for teachers | Space teacher via api.x.ai |
+| `XAI_API_KEY` | yes for teachers | Text teacher via api.x.ai |
 | `XAI_MODEL` | optional | default `grok-3-mini` |
+| `OPENAI_API_KEY` | Pro neural TTS | OpenAI `tts-1-hd` |
+| `OPENAI_TTS_MODEL` | optional | default `tts-1-hd` |
+| `ELEVENLABS_API_KEY` | optional Pro | ElevenLabs TTS |
+| `ELEVENLABS_VOICE_ID` | optional | default Rachel-style id |
 
 ```bash
 npx vercel env add XAI_API_KEY --scope nektaronbase-cells-projects

@@ -123,6 +123,16 @@ textarea{min-height:56px}
 .done-box p{color:#6ee7b7;font-weight:700;margin-bottom:10px}
 .legal{text-align:center;font-size:.68rem;color:#6b7280;margin:18px 8px 8px;line-height:1.4}
 .legal a{color:#94a3b8}
+
+.voice-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;padding:8px 10px;background:#0c1018;border:1px solid #243044;border-radius:12px}
+.voice-bar label{font-size:.68rem;color:#94a3b8;margin:0}
+.voice-bar select{width:auto;min-width:140px;margin:0;padding:6px 8px;font-size:.75rem;background:#1a1a28;border:1px solid #2a2a3c;color:#e8e8ed;border-radius:8px}
+.tier-pill{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(94,234,212,.12);color:#5eead4}
+.tier-pill.pro{background:rgba(251,191,36,.15);color:#fbbf24}
+.tier-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.tier-actions button,.tier-actions a{font-size:.68rem;padding:5px 8px;border-radius:8px;border:1px solid #2a2a3c;background:#1a1a28;color:#e8e8ed;cursor:pointer;text-decoration:none}
+.tier-actions a.pro-btn{background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#1a1200;border:none;font-weight:700}
+
 </style>
 </head>
 <body>
@@ -140,6 +150,7 @@ textarea{min-height:56px}
     <a href="#" onclick="show('journal');return false">Journal</a>
     <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
     <a href="https://github.com/ceedot-rock/splabs-brand/blob/main/docs/SLID_PHI_STRIPE.md" target="_blank" rel="noopener">Pricing</a>
+    <a href="#voice-pro" onclick="showVoicePro();return false">Voice</a>
     <a href="https://github.com/ceedot-rock/teachaid" target="_blank" rel="noopener">GitHub</a>
   </nav>
 </header>
@@ -151,6 +162,16 @@ textarea{min-height:56px}
 <div class="card" onclick="openBook('s3')"><span class="tag">BOOK 03</span><h3>How Computers Count</h3><p>Bits (0 and 1)</p><div class="teacher-pill">Teacher Bit</div></div>
 <p class="label">Next level</p>
 <div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(147,197,253,.12);color:#93c5fd">COMPUTING</span><h3>From Integers to Codes</h3><p>Why codes need positive integers</p><div class="teacher-pill">Teacher Codex</div></div>
+
+<div class="j-card" id="voiceProCard" style="display:none">
+  <p class="label" style="margin-top:0">Voice tiers · TEACHAiD / SPLabs</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices, free, private, works offline after load.</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro</strong> — choose neural voice models (OpenAI HD / ElevenLabs when configured). Unlock once on this device.</p>
+  <button class="btn" type="button" onclick="activatePro()">Activate Pro on this device</button>
+  <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic')">Stay on Basic</button>
+  <p class="voice-hint">Pro neural audio needs server keys (OPENAI_API_KEY or ELEVENLABS_API_KEY). Without them, Pro still unlocks extra browser voice styles.</p>
+</div>
+
 <p class="legal">TEACHAiD is a licensed and trademarked entity of <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>. Each book includes a certified teacher who unlocks the next chapter when you are ready.</p>
 </div>
 
@@ -179,6 +200,16 @@ textarea{min-height:56px}
     <button type="button" id="paceSlow" onclick="setPace('slow')">Slow</button>
     <button type="button" class="on" id="paceMed" onclick="setPace('medium')">My pace</button>
     <button type="button" id="paceFast" onclick="setPace('fast')">Faster</button>
+  </div>
+
+  <div class="voice-bar" id="voiceBar">
+    <span class="tier-pill" id="tierPill">Basic</span>
+    <label for="voiceModel">Voice</label>
+    <select id="voiceModel" onchange="onVoiceModelChange()"></select>
+    <div class="tier-actions">
+      <button type="button" id="tierToggleBtn" onclick="toggleTierUi()">Pro voices</button>
+      <a class="pro-btn" id="proBuyLink" href="#voice-pro" onclick="showVoicePro();return false">Get Pro</a>
+    </div>
   </div>
   <div class="act-row">
     <button type="button" class="btn row" onclick="teacherAction('explain')">Teach me</button>
@@ -314,7 +345,11 @@ c1:{
 var cur=null,chi=0,pace='medium';
 /** per-book chat histories */
 var histories={};
-var speakOn=true,recog=null,listening=false;
+var speakOn=true,recog=null,listening=false,audioEl=null;
+var TIER_KEY='teachaid_tier_v1', VOICE_KEY='teachaid_voice_model_v1';
+var tier=localStorage.getItem(TIER_KEY)||'basic';
+var voiceModel=localStorage.getItem(VOICE_KEY)||'browser:auto';
+
 var PK='teachaid_progress_v1';
 
 function materialsForBook(id){
@@ -438,6 +473,7 @@ function openBook(id){
   document.getElementById('tAvatar').textContent=b.avatar||b.teacher.charAt(0);
   renderCh();
   renderChatFromHist(true);
+  fillVoiceSelect();
   show('reader');
 }
 function renderChNavOnly(){
@@ -565,50 +601,202 @@ function addBubble(role,text,store){
   log.appendChild(d);
   log.scrollTop=log.scrollHeight;
 }
+
+var BASIC_VOICES=[
+  {id:'browser:auto',label:'Auto (best on device)',tier:'basic'},
+  {id:'browser:soft',label:'Soft tutor',tier:'basic'},
+  {id:'browser:clear',label:'Clear classroom',tier:'basic'},
+  {id:'browser:warm',label:'Warm coach',tier:'basic'}
+];
+var PRO_VOICES=[
+  {id:'openai:nova',label:'Neural · Nova',tier:'pro'},
+  {id:'openai:shimmer',label:'Neural · Shimmer',tier:'pro'},
+  {id:'openai:alloy',label:'Neural · Alloy',tier:'pro'},
+  {id:'openai:echo',label:'Neural · Echo',tier:'pro'},
+  {id:'openai:fable',label:'Neural · Fable',tier:'pro'},
+  {id:'openai:onyx',label:'Neural · Onyx',tier:'pro'},
+  {id:'elevenlabs:default',label:'Neural · ElevenLabs',tier:'pro'},
+  {id:'browser:premium',label:'Premium on-device',tier:'pro'}
+];
+
+function isPro(){return tier==='pro'}
+function allVoiceOptions(){
+  return isPro()? BASIC_VOICES.concat(PRO_VOICES) : BASIC_VOICES;
+}
+function fillVoiceSelect(){
+  var sel=document.getElementById('voiceModel');
+  if(!sel)return;
+  var opts=allVoiceOptions();
+  sel.innerHTML='';
+  opts.forEach(function(o){
+    var op=document.createElement('option');
+    op.value=o.id;op.textContent=o.label;
+    if(o.id===voiceModel)op.selected=true;
+    sel.appendChild(op);
+  });
+  // if current model not in list (pro model while basic), reset
+  if(!opts.some(function(o){return o.id===voiceModel})){
+    voiceModel='browser:auto';
+    localStorage.setItem(VOICE_KEY,voiceModel);
+    sel.value=voiceModel;
+  }else sel.value=voiceModel;
+  var pill=document.getElementById('tierPill');
+  if(pill){
+    pill.textContent=isPro()?'Pro':'Basic';
+    pill.className='tier-pill'+(isPro()?' pro':'');
+  }
+  var buy=document.getElementById('proBuyLink');
+  if(buy) buy.style.display=isPro()?'none':'inline-block';
+  var tb=document.getElementById('tierToggleBtn');
+  if(tb) tb.textContent=isPro()?'Manage tier':'Pro voices';
+}
+function onVoiceModelChange(){
+  var sel=document.getElementById('voiceModel');
+  if(!sel)return;
+  voiceModel=sel.value;
+  if(voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0){
+    if(!isPro()){setTier('basic');return}
+  }
+  localStorage.setItem(VOICE_KEY,voiceModel);
+}
+function setTier(t){
+  tier=(t==='pro')?'pro':'basic';
+  localStorage.setItem(TIER_KEY,tier);
+  if(!isPro() && (voiceModel.indexOf('openai:')===0||voiceModel.indexOf('elevenlabs:')===0||voiceModel==='browser:premium')){
+    voiceModel='browser:auto';
+    localStorage.setItem(VOICE_KEY,voiceModel);
+  }
+  fillVoiceSelect();
+  var card=document.getElementById('voiceProCard');
+  if(card) card.style.display='none';
+  var hint=document.getElementById('voiceHint');
+  if(hint) hint.textContent=isPro()
+    ? 'Pro: neural models when server keys are set · else premium on-device'
+    : 'Basic: strong on-device voice · upgrade for neural models';
+}
+function activatePro(){
+  setTier('pro');
+  voiceModel='openai:nova';
+  localStorage.setItem(VOICE_KEY,voiceModel);
+  fillVoiceSelect();
+  var hint=document.getElementById('voiceHint');
+  if(hint) hint.textContent='Pro on · pick a neural voice above (falls back to browser if keys missing)';
+}
+function showVoicePro(){
+  show('home');
+  var card=document.getElementById('voiceProCard');
+  if(card){card.style.display='block';card.scrollIntoView({behavior:'smooth',block:'nearest'})}
+}
+function toggleTierUi(){
+  if(isPro()){showVoicePro();return}
+  showVoicePro();
+}
+
 function toggleSpeak(){
   speakOn=!speakOn;
   var b=document.getElementById('speakBtn');
   b.className='icon-btn'+(speakOn?' speak-on':'');
   b.textContent=speakOn?'🔊':'🔇';
-  if(!speakOn&&window.speechSynthesis)speechSynthesis.cancel();
+  if(!speakOn){
+    if(window.speechSynthesis)speechSynthesis.cancel();
+    if(audioEl){try{audioEl.pause()}catch(e){} audioEl=null}
+  }
 }
-function pickVoice(){
+function pickVoice(style){
   if(!window.speechSynthesis)return null;
   var voices=speechSynthesis.getVoices()||[];
   if(!voices.length)return null;
-  var prefer=['Google US English','Google UK English Female','Samantha','Karen','Moira','Microsoft Aria','Microsoft Jenny','Natural'];
-  for(var i=0;i<prefer.length;i++){
-    for(var j=0;j<voices.length;j++){
-      if(voices[j].name&&voices[j].name.indexOf(prefer[i])>=0)return voices[j];
+  var prefer=['Google US English','Google UK English Female','Samantha','Karen','Moira','Microsoft Aria','Microsoft Jenny','Natural','Zira'];
+  var en=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('en')===0});
+  var pool=en.length?en:voices;
+  if(style==='soft'||style==='warm'){
+    for(var i=0;i<pool.length;i++){
+      var n=(pool[i].name||'').toLowerCase();
+      if(n.indexOf('female')>=0||n.indexOf('samantha')>=0||n.indexOf('zira')>=0||n.indexOf('jenny')>=0)return pool[i];
     }
   }
-  var en=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('en')===0});
-  // Prefer female-sounding or local service voices when available
-  for(var k=0;k<en.length;k++){
-    var n=(en[k].name||'').toLowerCase();
-    if(n.indexOf('female')>=0||n.indexOf('samantha')>=0||n.indexOf('zira')>=0)return en[k];
+  if(style==='clear'||style==='premium'){
+    for(var j=0;j<prefer.length;j++){
+      for(var k=0;k<pool.length;k++){
+        if(pool[k].name&&pool[k].name.indexOf(prefer[j])>=0)return pool[k];
+      }
+    }
   }
-  return en[0]||voices[0];
+  for(var a=0;a<prefer.length;a++){
+    for(var b=0;b<pool.length;b++){
+      if(pool[b].name&&pool[b].name.indexOf(prefer[a])>=0)return pool[b];
+    }
+  }
+  return pool[0];
 }
-function speak(text){
-  if(!speakOn||!window.speechSynthesis)return;
-  try{
-    speechSynthesis.cancel();
-    // Strip overly stiff punctuation runs for smoother TTS
-    var clean=String(text).replace(/\s+/g,' ').trim();
-    if(clean.length>500)clean=clean.slice(0,500)+'…';
-    var u=new SpeechSynthesisUtterance(clean);
+function speakBrowser(text, style){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  var clean=String(text).replace(/\s+/g,' ').trim();
+  if(clean.length>600)clean=clean.slice(0,600)+'…';
+  // light pacing for natural speech
+  clean=clean.replace(/([.!?])\s+/g,'$1 ');
+  var u=new SpeechSynthesisUtterance(clean);
+  u.lang='en-US';
+  if(style==='soft'){u.rate=0.92;u.pitch=1.06}
+  else if(style==='clear'){u.rate=0.98;u.pitch=1.0}
+  else if(style==='warm'){u.rate=0.94;u.pitch=1.04}
+  else if(style==='premium'){u.rate=0.96;u.pitch=1.02}
+  else {
     u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
     u.pitch=1.02;
-    u.lang='en-US';
-    var v=pickVoice();
-    if(v)u.voice=v;
-    speechSynthesis.speak(u);
+  }
+  if(pace==='slow')u.rate=Math.min(u.rate,0.9);
+  if(pace==='fast')u.rate=Math.max(u.rate,1.0);
+  var v=pickVoice(style||'auto');
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+async function speakNeural(text, model){
+  var r=await fetch('/api/tts',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text:text, model:model, tier:'pro'})
+  });
+  var ct=r.headers.get('content-type')||'';
+  if(!r.ok || ct.indexOf('audio')<0){
+    var err={}; try{err=await r.json()}catch(e){}
+    throw new Error(err.error||('TTS HTTP '+r.status));
+  }
+  var blob=await r.blob();
+  var url=URL.createObjectURL(blob);
+  if(audioEl){try{audioEl.pause()}catch(e){}}
+  audioEl=new Audio(url);
+  audioEl.onended=function(){URL.revokeObjectURL(url)};
+  await audioEl.play();
+}
+async function speak(text){
+  if(!speakOn)return;
+  var model=voiceModel||'browser:auto';
+  try{
+    if(isPro() && (model.indexOf('openai:')===0 || model.indexOf('elevenlabs:')===0)){
+      try{
+        await speakNeural(text, model);
+        return;
+      }catch(e){
+        var hint=document.getElementById('voiceHint');
+        if(hint) hint.textContent='Neural unavailable — using Basic on-device voice';
+        speakBrowser(text, 'premium');
+        return;
+      }
+    }
+    var style='auto';
+    if(model==='browser:soft')style='soft';
+    else if(model==='browser:clear')style='clear';
+    else if(model==='browser:warm')style='warm';
+    else if(model==='browser:premium')style='premium';
+    speakBrowser(text, style);
   }catch(e){}
 }
 if(window.speechSynthesis){
-  speechSynthesis.onvoiceschanged=function(){pickVoice()};
+  speechSynthesis.onvoiceschanged=function(){pickVoice('auto')};
 }
+
 function getRecog(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR)return null;
@@ -713,7 +901,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 /* Force fresh app after deploy — unregister stale SWs then register v6 */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v7';
+  var VER='v8';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));
@@ -723,7 +911,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=7');
+      return navigator.serviceWorker.register('./sw.js?v=8');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -732,9 +920,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=7').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8').catch(function(){});
   }
 })();
+fillVoiceSelect();
+// honor ?pro=1 unlock
+if(/[?&]pro=1(?:&|$)/.test(location.search))activatePro();
 show('home');
 </script>
 </body>

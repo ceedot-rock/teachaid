@@ -1,5 +1,5 @@
-/* teachaid-v7 — network-first so deploys show up; kill old caches */
-const CACHE = 'teachaid-v7';
+/* teachaid-v8 — network-first shell; never cache API */
+const CACHE = 'teachaid-v8';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -19,16 +19,14 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET') return;
-
+  if (req.method !== 'GET' && !new URL(req.url).pathname.startsWith('/api/')) return;
   const url = new URL(req.url);
-  // API always network
   if (url.pathname.startsWith('/api/')) {
     e.respondWith(fetch(req));
     return;
   }
+  if (req.method !== 'GET') return;
 
-  // Network-first for HTML / SW / app shell — never stick on old lessons
   const isNav = req.mode === 'navigate';
   const isShell =
     isNav ||
@@ -50,7 +48,6 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Other assets: cache fallback ok
   e.respondWith(
     fetch(req)
       .then((res) => {

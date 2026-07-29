@@ -16,6 +16,16 @@ Of each **$1/mo** join pass: **90%** room creator · **10% TEACHAiD Fund** (Conn
 
 Admittance: creator and/or admins appointed by creator.
 
+### Curriculum royalties (proposal — pending Corey lock)
+
+| Stage | Money |
+|-------|--------|
+| Submit review fee | **$3** non-refundable (TEACHAiD keeps 100%) |
+| Accepted class — ongoing | **70% creator · 30% TEACHAiD** of net revenue attributed to that class |
+| Rejected | no royalty · no refund of $3 |
+
+Attribution rules TBD (enrollments, Pro uplift, or flat monthly license). Until Connect is live, accepted creators are paid manually via Stripe dashboard transfer.
+
 ### Legacy (superseded for new sales)
 
 | SKU | Price | Payment Link |
@@ -40,13 +50,26 @@ App verifies via `GET /api/pro-verify?session_id=cs_…` then grants:
 | Pro monthly | Pro tier while subscription active (session stored) |
 | Trial $0.99 | `trial_until` = now + 7 days · gated Pro |
 | Submit $3 | `curriculum_submit_paid` + optional creator email for royalties |
+| Chaternity create $20 | create-room credit on device |
+| Chaternity join $1/mo | join pass on device |
 
-## Curriculum royalties
+## Fulfillment model (current vs optional webhook)
+
+**Current (shipped):** Payment Link → browser return with `session_id` → `/api/pro-verify` → localStorage entitlement.
+
+**Optional later:** `api/stripe-webhook.js`
+
+- Verify `Stripe-Signature` with `STRIPE_WEBHOOK_SECRET`
+- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+- Map amount/sku → grant Pro/trial/submit/chat (KV or email allowlist)
+- Not required for Payment Link flow to work
+
+## Curriculum royalties — process
 
 1. Creator pays **$3** to submit a class for review.  
-2. If **accepted**, TEACHAiD routes **royalties** to the creator’s account.  
-3. Withdrawals via **Stripe** (Connect Express / payouts — configure Connect account onboarding separately).  
-4. Rejection of a submission does **not** refund the $3 review fee (stated on pricing page).
+2. If **accepted**, TEACHAiD routes **royalties** (proposed 70/30) to the creator’s Connect account.  
+3. Withdrawals via **Stripe Connect Express**.  
+4. Rejection does **not** refund the $3 review fee (stated on pricing page).
 
 ### Vercel env
 
@@ -55,10 +78,13 @@ App verifies via `GET /api/pro-verify?session_id=cs_…` then grants:
 | `STRIPE_RESTRICTED_KEY` or `STRIPE_SECRET_KEY` | Verify checkout sessions |
 | `TEACHAID_PRO_PRICE_ID` | optional lock — monthly `price_1TyaelK8JsmXFzvIP2HcvIMP` |
 | `XAI_API_KEY` | Grok chat + Pro TTS |
+| `STRIPE_WEBHOOK_SECRET` | only if webhook route is added |
 
 ### Connect (royalties) — ops checklist
 
-- [ ] Enable Stripe Connect  
-- [ ] Creator onboarding link (Express)  
-- [ ] Application fee / royalty % policy  
+- [ ] Enable Stripe Connect (Express)  
+- [ ] Creator onboarding link (Express accounts)  
+- [ ] Lock royalty % (proposal: curriculum **70/30**, Chaternity **90/10**)  
+- [ ] Application fee on join subscriptions for TEACHAiD Fund 10%  
 - [ ] Payout schedule  
+- [ ] Legal copy for TEACHAiD Fund 10%  

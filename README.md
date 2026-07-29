@@ -25,18 +25,20 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 - Beginner path: Counting → Positive & Negative → How Computers Count  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  
-- **Ask** tab: AI teacher (xAI) + mic + spoken answers  
+- **One teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book’s materials only  
+- **Explain this chapter** / **Continue** at Slow · My pace · Faster  
+- Questions + voice (mic + spoken answers)  
 
-## Server env (Vercel)
+## Server env (Vercel team: nektaronbase-cells-projects)
 
 | Name | Required | Notes |
 |------|----------|--------|
-| `XAI_API_KEY` | yes for Ask | Space teacher via api.x.ai |
+| `XAI_API_KEY` | yes for teachers | Space teacher via api.x.ai |
 | `XAI_MODEL` | optional | default `grok-3-mini` |
 
 ```bash
-vercel env add XAI_API_KEY
-vercel --prod
+npx vercel env add XAI_API_KEY --scope nektaronbase-cells-projects
+npx vercel --prod --scope nektaronbase-cells-projects
 ```
 
 Built as a Progressive Web App (PWA). SPLabs brand assets used for social meta.

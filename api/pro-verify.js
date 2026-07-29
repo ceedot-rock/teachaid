@@ -71,14 +71,22 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Amount sanity: at least $1
-    if (typeof data.amount_total === "number" && data.amount_total < 100) {
+    // Amount sanity: allow trial ($0.99), submit ($3), pro monthly ($9)
+    // TEACHAiD SKUs: 99 trial · 300 submit · 900 pro
+    if (typeof data.amount_total === "number" && data.amount_total < 99) {
       return res.status(403).json({ ok: false, error: "Invalid amount" });
     }
 
+    const amount = data.amount_total;
+    let sku = "pro";
+    if (amount === 99) sku = "trial_7d";
+    else if (amount === 300) sku = "curriculum_submit";
+    else if (amount === 900) sku = "pro_monthly";
+
     return res.status(200).json({
       ok: true,
-      pro: true,
+      pro: sku !== "curriculum_submit",
+      sku,
       session_id: data.id,
       customer_email: data.customer_details?.email || data.customer_email || null,
       amount_total: data.amount_total,

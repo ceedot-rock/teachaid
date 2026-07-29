@@ -481,8 +481,8 @@ input[type=range]{width:100%;accent-color:var(--teal)}
     <a href="#" onclick="show('journal');return false">Journal</a>
     <a href="#" onclick="show('certs');return false">Certificates</a>
     <a href="#" onclick="show('student');return false">Student</a>
-    <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
-    <a href="https://github.com/ceedot-rock/splabs-brand/blob/main/docs/SLID_PHI_STRIPE.md" target="_blank" rel="noopener">Pricing</a>
+    <a href="https://splabs-brand.vercel.app/" target="_blank" rel="noopener">SPLabs</a>
+    <a href="pricing.html">Pricing</a>
     <a href="#voice-pro" onclick="showVoicePro();return false">Voice</a>
     <a href="https://github.com/ceedot-rock/teachaid" target="_blank" rel="noopener">GitHub</a>
   </nav>
@@ -511,15 +511,20 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 <div id="homeCatalog"></div>
 
 <div class="j-card" id="voiceProCard" style="display:none">
-  <p class="label" style="margin-top:0">Voice tiers · TEACHAiD / SPLabs</p>
-  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices: Auto, Soft, Clear, Warm. Free &amp; private.</p>
-  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 once</strong> — Grok / SpaceXAI neural voices (Eve, Ara, Leo, Rex…). Unlocks after Stripe checkout.</p>
-  <a class="btn" id="proCheckoutBtn" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03" style="display:block;text-align:center;text-decoration:none">Unlock Pro with Stripe · $9</a>
+  <p class="label" style="margin-top:0">Pricing · TEACHAiD / SPLabs</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (free)</strong> — on-device voices · full built-in curriculum.</p>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Trial · $0.99</strong> — 7 days limited / gated Pro access.</p>
+  <a class="btn secondary" id="trialCheckoutBtn" href="https://buy.stripe.com/9B68wQgjPapydpHcwM6wE05" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px">Start 7-day trial · $0.99</a>
+  <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 / month</strong> — Grok neural voices (Eve, Ara, Leo, Rex…) while subscribed.</p>
+  <a class="btn" id="proCheckoutBtn" href="https://buy.stripe.com/14A3cw7Nj8hqfxP7cs6wE04" style="display:block;text-align:center;text-decoration:none">Subscribe Pro · $9/mo</a>
+  <p class="label" style="margin-top:14px">Submit a class · $3</p>
+  <p style="font-size:.8rem;color:#9ca3af;margin-bottom:8px">Review fee to submit curriculum. If accepted, royalties route to your account — withdraw via Stripe.</p>
+  <a class="btn secondary" href="https://buy.stripe.com/8x2aEYffLdBK5XfeEU6wE06" style="display:block;text-align:center;text-decoration:none">Pay $3 · submit class</a>
   <p class="label" style="margin-top:14px">Lifetime / invite</p>
   <input type="email" id="lifetimeEmail" placeholder="you@email.com" autocomplete="email" style="margin-bottom:8px"/>
   <button class="btn secondary" type="button" onclick="redeemLifetime()">Redeem lifetime Pro</button>
   <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic');document.getElementById('voiceProCard').style.display='none'">Stay on Basic</button>
-  <p class="voice-hint">Lifetime members enter the invited email. Stripe members pay once. Grok/xAI voices after unlock.</p>
+  <p class="voice-hint"><a href="pricing.html" style="color:#93c5fd">Full pricing page</a> · trial gated · Pro monthly · $3 submit + royalties</p>
 </div>
 
 <p class="legal">TEACHAiD is a licensed and trademarked entity of <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>. Each book includes a certified teacher who unlocks the next chapter when you are ready.</p>
@@ -558,7 +563,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
     <select id="voiceModel" onchange="onVoiceModelChange()"></select>
     <div class="tier-actions">
       <button type="button" id="tierToggleBtn" onclick="toggleTierUi()">Pro voices</button>
-      <a class="pro-btn" id="proBuyLink" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03">Get Pro · $9</a>
+      <a class="pro-btn" id="proBuyLink" href="https://buy.stripe.com/14A3cw7Nj8hqfxP7cs6wE04">Pro · $9/mo</a>
     </div>
   </div>
   <div class="act-row">
@@ -603,7 +608,18 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 
 <div id="curriculum" class="wrap hidden">
 <div class="topbar"><h2>Curriculum</h2></div>
-<p class="legal" style="text-align:left;margin:0 0 12px">Upload materials to <strong>create</strong> a new textbook or <strong>add</strong> chapters to one you already built. TEACHAiD · SPLabs.</p>
+<p class="legal" style="text-align:left;margin:0 0 12px">Upload materials to <strong>create</strong> or <strong>add</strong> chapters. Submitting a class to the shared curriculum is <strong>$3</strong> — if accepted, royalties route to your account (withdraw via Stripe). TEACHAiD · SPLabs.</p>
+
+<div class="upload-card" id="submitPayCard">
+  <p class="label" style="margin-top:0">Submit a class · $3 review fee</p>
+  <p class="hint">Pay $3 to submit for curriculum review. Acceptance is not guaranteed. If accepted, royalties go to your payout account.</p>
+  <label for="creatorEmail">Creator email (for royalties)</label>
+  <input type="email" id="creatorEmail" placeholder="you@email.com" autocomplete="email"/>
+  <label for="creatorStripeNote">Stripe payout note</label>
+  <input type="text" id="creatorStripeNote" placeholder="Stripe Connect email or account id (optional)" autocomplete="off"/>
+  <a class="btn" id="submitPayBtn" href="https://buy.stripe.com/8x2aEYffLdBK5XfeEU6wE06" style="display:block;text-align:center;text-decoration:none">Pay $3 · unlock submit</a>
+  <p class="upload-status" id="submitPayStatus"></p>
+</div>
 
 <div class="mode-tabs" role="tablist" aria-label="Curriculum mode">
   <button type="button" class="on" id="modeCreateBtn" onclick="setCurrMode('create')">Create new</button>
@@ -612,7 +628,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
 
 <div class="upload-card" id="loadDocCard">
   <div id="currCreateOpts" class="curr-sub on">
-    <p class="hint">Start a new book from notes, a lesson outline, or paste. We assign a certified teacher and chapters.</p>
+    <p class="hint">Start a new book from notes, a lesson outline, or paste. We assign a certified teacher and chapters. <strong>Submit fee required</strong> to enter review.</p>
     <label for="docTitle">Optional title</label>
     <input type="text" id="docTitle" placeholder="e.g. Intro to Fractions" autocomplete="off"/>
   </div>
@@ -625,7 +641,7 @@ input[type=range]{width:100%;accent-color:var(--teal)}
   <input type="file" id="docFile" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,text/plain,text/markdown,text/html"/>
   <label for="docPaste">Or paste materials</label>
   <textarea id="docPaste" placeholder="Paste lesson notes, worksheet text, or a study guide…"></textarea>
-  <button class="btn" type="button" id="buildCurrBtn" onclick="buildCurriculumFromUpload()">Create curriculum</button>
+  <button class="btn" type="button" id="buildCurrBtn" onclick="buildCurriculumFromUpload()">Create &amp; submit · $3 paid</button>
   <p class="upload-status" id="uploadStatus"></p>
 </div>
 
@@ -976,6 +992,15 @@ async function gatherUploadText(){
 
 async function buildCurriculumFromUpload(){
   var btn=document.getElementById('buildCurrBtn');
+  // $3 submit fee required to enter curriculum review pipeline
+  if(!hasCurriculumSubmitPaid()){
+    setUploadStatus('Pay the $3 class submit fee first — then create & submit for review.','err');
+    var card=document.getElementById('submitPayCard');
+    if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  var creator=(document.getElementById('creatorEmail')&&document.getElementById('creatorEmail').value||'').trim();
+  if(creator)localStorage.setItem(CREATOR_EMAIL_KEY,creator.toLowerCase());
   setUploadStatus('Reading materials…','');
   if(btn){btn.disabled=true;btn.textContent=currMode==='append'?'Adding…':'Building…'}
 
@@ -992,6 +1017,21 @@ async function buildCurriculumFromUpload(){
     }else{
       await createCurriculum(text,gathered.filename);
     }
+    // queue for review metadata
+    try{
+      var q=JSON.parse(localStorage.getItem('teachaid_submit_queue_v1')||'[]');
+      q.unshift({
+        at:new Date().toISOString(),
+        email:localStorage.getItem(CREATOR_EMAIL_KEY)||'',
+        stripeNote:(document.getElementById('creatorStripeNote')&&document.getElementById('creatorStripeNote').value)||'',
+        mode:currMode,
+        feePaid:true,
+        status:'pending_review',
+        royaltyNote:'If accepted, royalties route to creator Stripe account for withdrawal.'
+      });
+      localStorage.setItem('teachaid_submit_queue_v1',JSON.stringify(q.slice(0,50)));
+      setUploadStatus((document.getElementById('uploadStatus').textContent||'')+' · Queued for curriculum review.','ok');
+    }catch(e){}
 
     document.getElementById('docPaste').value='';
     var titleEl=document.getElementById('docTitle');
@@ -1200,10 +1240,25 @@ var histories={};
 var speakOn=true,recog=null,listening=false,audioEl=null;
 var TIER_KEY='teachaid_tier_v1', VOICE_KEY='teachaid_voice_model_v1';
 
-var PRO_PAY_LINK='https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03';
+/** Live Stripe payment links (see docs/PRO_STRIPE.md) */
+var STRIPE_LINKS={
+  proMonthly:'https://buy.stripe.com/14A3cw7Nj8hqfxP7cs6wE04',
+  trial7d:'https://buy.stripe.com/9B68wQgjPapydpHcwM6wE05',
+  curriculumSubmit:'https://buy.stripe.com/8x2aEYffLdBK5XfeEU6wE06',
+  proLegacyOnce:'https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03'
+};
+var PRO_PAY_LINK=STRIPE_LINKS.proMonthly;
+var TRIAL_PAY_LINK=STRIPE_LINKS.trial7d;
+var SUBMIT_PAY_LINK=STRIPE_LINKS.curriculumSubmit;
 var PRO_SESSION_KEY='teachaid_pro_session_v1';
 var PRO_UNTIL_KEY='teachaid_pro_until_v1';
+var TRIAL_UNTIL_KEY='teachaid_trial_until_v1';
+var SUBMIT_PAID_KEY='teachaid_curriculum_submit_paid_v1';
+var CREATOR_EMAIL_KEY='teachaid_creator_email_v1';
 var STUDENT_ACC_KEY='teachaid_student_account_v1';
+var TRIAL_MS=7*24*60*60*1000;
+var TRIAL_MSG_CAP=12; // gated teacher messages per day during trial
+var TRIAL_MSG_KEY='teachaid_trial_msgs_v1';
 
 var tier=localStorage.getItem(TIER_KEY)||'basic';
 var voiceModel=localStorage.getItem(VOICE_KEY)||'browser:auto';
@@ -1911,7 +1966,6 @@ var PRO_VOICES=[
 function getProUntilMs(){
   var n=parseInt(localStorage.getItem(PRO_UNTIL_KEY)||'0',10);
   if(!Number.isFinite(n)||n<=0){
-    // sync from student account if present
     try{
       var acc=loadStudentAccount();
       if(acc&&acc.proUntil)n=Number(acc.proUntil)||0;
@@ -1919,10 +1973,77 @@ function getProUntilMs(){
   }
   return n||0;
 }
+function getTrialUntilMs(){
+  var n=parseInt(localStorage.getItem(TRIAL_UNTIL_KEY)||'0',10);
+  return Number.isFinite(n)?n:0;
+}
+function isTrialActive(){
+  return getTrialUntilMs()>Date.now();
+}
+function hasCurriculumSubmitPaid(){
+  return localStorage.getItem(SUBMIT_PAID_KEY)==='1';
+}
 function isPro(){
   if(getProUntilMs()>Date.now())return true;
+  if(isTrialActive())return true; // gated Pro surfaces; message cap applied separately
   if(tier==='pro'&&localStorage.getItem(PRO_SESSION_KEY))return true;
-  return tier==='pro'&&!!localStorage.getItem(PRO_SESSION_KEY);
+  return false;
+}
+function isFullPro(){
+  // full Pro (not trial-only)
+  if(getProUntilMs()>Date.now())return true;
+  var sid=localStorage.getItem(PRO_SESSION_KEY)||'';
+  if(tier==='pro'&&sid&&sid.indexOf('trial:')!==0)return true;
+  return false;
+}
+function trialMsgsToday(){
+  try{
+    var o=JSON.parse(localStorage.getItem(TRIAL_MSG_KEY)||'{}');
+    var day=new Date().toISOString().slice(0,10);
+    if(o.day!==day)return 0;
+    return Number(o.count)||0;
+  }catch(e){return 0}
+}
+function bumpTrialMsg(){
+  var day=new Date().toISOString().slice(0,10);
+  var c=trialMsgsToday()+1;
+  localStorage.setItem(TRIAL_MSG_KEY,JSON.stringify({day:day,count:c}));
+  return c;
+}
+function canUseTeacher(){
+  if(isFullPro()||getProUntilMs()>Date.now())return true;
+  if(!isTrialActive())return true; // basic free teachers still work
+  // trial: gated message cap
+  return trialMsgsToday()<TRIAL_MSG_CAP;
+}
+function activateTrial(ms){
+  var until=ms|| (Date.now()+TRIAL_MS);
+  localStorage.setItem(TRIAL_UNTIL_KEY,String(until));
+  localStorage.setItem(PRO_SESSION_KEY,'trial:'+until);
+  tier='pro';
+  localStorage.setItem(TIER_KEY,'pro');
+  fillVoiceSelect();
+  var hint=document.getElementById('voiceHint');
+  if(hint)hint.textContent='Trial active until '+new Date(until).toLocaleDateString()+' · gated Pro · '+TRIAL_MSG_CAP+' teacher msgs/day';
+}
+function markCurriculumSubmitPaid(email){
+  localStorage.setItem(SUBMIT_PAID_KEY,'1');
+  if(email)localStorage.setItem(CREATOR_EMAIL_KEY,String(email).toLowerCase());
+  var st=document.getElementById('submitPayStatus');
+  if(st){st.textContent='Submit fee paid — you can create & submit classes for review.';st.className='upload-status ok'}
+  var btn=document.getElementById('buildCurrBtn');
+  if(btn)btn.textContent='Create & submit for review';
+}
+function refreshSubmitPayUi(){
+  var st=document.getElementById('submitPayStatus');
+  var em=document.getElementById('creatorEmail');
+  if(em&&!em.value)em.value=localStorage.getItem(CREATOR_EMAIL_KEY)||'';
+  if(hasCurriculumSubmitPaid()){
+    if(st){st.textContent='Submit fee paid on this device. Accepted classes earn royalties to your Stripe payout account.';st.className='upload-status ok'}
+  }else if(st){
+    st.textContent='Pay $3 to unlock curriculum submit for review.';
+    st.className='upload-status';
+  }
 }
 function allVoiceOptions(){
   return isPro()? BASIC_VOICES.concat(PRO_VOICES) : BASIC_VOICES;
@@ -2139,13 +2260,24 @@ function fillVoiceSelect(){
   }else sel.value=voiceModel;
   var pill=document.getElementById('tierPill');
   if(pill){
-    pill.textContent=isPro()?'Pro':'Basic';
-    pill.className='tier-pill'+(isPro()?' pro':'');
+    if(isFullPro()){pill.textContent='Pro';pill.className='tier-pill pro'}
+    else if(isTrialActive()){pill.textContent='Trial';pill.className='tier-pill pro'}
+    else{pill.textContent='Basic';pill.className='tier-pill'}
   }
   var buy=document.getElementById('proBuyLink');
-  if(buy) buy.style.display=isPro()?'none':'inline-block';
+  if(buy){
+    buy.href=PRO_PAY_LINK;
+    buy.style.display=isFullPro()?'none':'inline-block';
+    buy.textContent=isTrialActive()?'Pro · $9/mo':'Pro · $9/mo';
+  }
   var tb=document.getElementById('tierToggleBtn');
-  if(tb) tb.textContent=isPro()?'Manage tier':'Pro voices';
+  if(tb) tb.textContent=isPro()?'Manage pricing':'Pro · Trial';
+  var tbtn=document.getElementById('trialCheckoutBtn');
+  if(tbtn)tbtn.href=TRIAL_PAY_LINK;
+  var pbtn=document.getElementById('proCheckoutBtn');
+  if(pbtn)pbtn.href=PRO_PAY_LINK;
+  var sbtn=document.getElementById('submitPayBtn');
+  if(sbtn)sbtn.href=SUBMIT_PAY_LINK;
 }
 function onVoiceModelChange(){
   var sel=document.getElementById('voiceModel');
@@ -2172,11 +2304,13 @@ function setTier(t){
   var card=document.getElementById('voiceProCard');
   if(card && t==='basic') card.style.display='none';
   var hint=document.getElementById('voiceHint');
-  if(hint) hint.textContent=isPro()
+  if(hint) hint.textContent=isFullPro()
     ? (getProUntilMs()>Date.now()
-      ? 'Pro · referral month until '+new Date(getProUntilMs()).toLocaleDateString()
-      : 'Pro · Grok/xAI neural voices · falls back on-device if needed')
-    : 'Basic · strong on-device voice · Get Pro for Grok voices ($9)';
+      ? 'Pro · referral/sub until '+new Date(getProUntilMs()).toLocaleDateString()
+      : 'Pro · $9/mo · Grok neural voices')
+    : (isTrialActive()
+      ? 'Trial · gated Pro until '+new Date(getTrialUntilMs()).toLocaleDateString()+' · '+Math.max(0,TRIAL_MSG_CAP-trialMsgsToday())+' msgs left today'
+      : 'Basic free · Trial $0.99 / 7d · Pro $9/mo · Submit class $3');
 }
 function activatePro(){
   /* Stripe/lifetime session OR active referral Pro month */
@@ -2230,18 +2364,38 @@ async function verifyProSession(sessionId){
   try{
     var r=await fetch('/api/pro-verify?session_id='+encodeURIComponent(sessionId));
     var d=await r.json().catch(function(){return{}});
-    if(r.ok&&d.ok&&d.pro){
-      localStorage.setItem(PRO_SESSION_KEY,sessionId);
-      activatePro();
+    if(r.ok&&d.ok){
+      var amt=Number(d.amount_total);
+      var sku=d.sku||'';
       var hint=document.getElementById('voiceHint');
-      if(hint) hint.textContent='Payment verified · Pro voices unlocked. Thank you!';
-      // clean URL
+      if(sku==='curriculum_submit'||amt===300){
+        localStorage.setItem(PRO_SESSION_KEY,'submit:'+sessionId);
+        markCurriculumSubmitPaid(d.customer_email||localStorage.getItem(CREATOR_EMAIL_KEY)||'');
+        if(hint) hint.textContent='Submit fee paid · $3. Create your class for curriculum review.';
+        show('curriculum');
+        refreshSubmitPayUi();
+      }else if(sku==='trial_7d'||amt===99){
+        localStorage.setItem(PRO_SESSION_KEY,sessionId);
+        activateTrial(Date.now()+TRIAL_MS);
+        if(hint) hint.textContent='Trial · 7 days gated Pro. Upgrade anytime · $9/mo.';
+      }else if(d.pro){
+        localStorage.setItem(PRO_SESSION_KEY,sessionId);
+        if(amt===900||sku==='pro_monthly'){
+          localStorage.setItem(PRO_UNTIL_KEY,String(Date.now()+32*24*60*60*1000));
+        }
+        activatePro();
+        if(hint) hint.textContent='Pro unlocked · thank you!';
+      }else{
+        if(hint) hint.textContent=d.error||'Payment recorded';
+        return false;
+      }
       try{
         var u=new URL(location.href);
         u.searchParams.delete('pro_session');
         u.searchParams.delete('session_id');
         history.replaceState({},'',u.pathname+u.search+u.hash);
       }catch(e){}
+      fillVoiceSelect();
       return true;
     }
     var hint2=document.getElementById('voiceHint');
@@ -2514,6 +2668,11 @@ function teacherPayload(mode,extraMessages){
 }
 
 async function callTeacher(mode,userLine){
+  if(!canUseTeacher()){
+    addBubble('err','Trial daily teacher limit reached ('+TRIAL_MSG_CAP+'/day). Subscribe Pro · $9/mo for full access.',false);
+    showVoicePro();
+    return;
+  }
   var btn=document.getElementById('sendBtn');
   btn.disabled=true;
   btn.textContent=mode==='check'?'Grading…':'Teaching…';
@@ -2521,6 +2680,7 @@ async function callTeacher(mode,userLine){
     addBubble('user',userLine,false);
     getHist().push({role:'user',content:userLine});
   }
+  if(isTrialActive()&&!isFullPro())bumpTrialMsg();
   try{
     var r=await fetch('/api/chat',{
       method:'POST',

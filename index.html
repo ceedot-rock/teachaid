@@ -383,6 +383,35 @@ textarea{min-height:56px}
 <div class="topbar"><h2>Student Campus</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Share comments, quiz scores, and test results with classmates. Posts stay on this device; use <strong>Share</strong> to send socially. TEACHAiD · SPLabs.</p>
 
+<div class="upload-card" id="referralCard">
+  <p class="label" style="margin-top:0">Student referral · 1 month free Pro</p>
+  <p class="hint">Every account gets a <strong>Student ID</strong>. When someone signs up with yours, <strong>you both</strong> get <strong>1 month free Pro</strong> — up to <strong>4 referrals per calendar year</strong>.</p>
+  <p class="label">Your Student ID</p>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <input type="text" id="myStudentId" readonly style="margin-bottom:0;font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.04em;color:#5eead4"/>
+    <button type="button" class="btn secondary" style="width:auto;padding:10px 12px;flex-shrink:0" onclick="copyStudentId()">Copy</button>
+  </div>
+  <button type="button" class="btn secondary" onclick="shareStudentId()">Share Student ID</button>
+  <p id="referralStats" class="hint" style="margin-top:10px">Referrals this year: 0 / 4</p>
+  <p id="referralProStatus" class="hint"></p>
+
+  <p class="label" style="margin-top:14px">Have a friend’s Student ID?</p>
+  <input type="text" id="referralInput" placeholder="TA-XXXXXXXX" autocomplete="off" style="font-family:ui-monospace,monospace"/>
+  <button type="button" class="btn" id="applyReferralBtn" onclick="applyFriendReferral()">Apply referral · get 1 month free</button>
+  <p class="upload-status" id="referralStatus"></p>
+
+  <div id="thankYouBox" class="hidden" style="margin-top:12px;padding:10px;border-radius:10px;border:1px solid rgba(94,234,212,.3);background:rgba(94,234,212,.06)">
+    <p class="label" style="margin-top:0">Send this thank-you code to your friend</p>
+    <p class="hint">They redeem it below to unlock <strong>their</strong> free month.</p>
+    <textarea id="thankYouOut" readonly style="min-height:64px;font-size:.75rem"></textarea>
+    <button type="button" class="btn secondary" onclick="copyThankYou()">Copy thank-you code</button>
+  </div>
+
+  <p class="label" style="margin-top:14px">Redeem a thank-you code (you were the referrer)</p>
+  <textarea id="thankYouIn" placeholder="TEACHAiD_TY:…" style="min-height:56px"></textarea>
+  <button type="button" class="btn secondary" onclick="claimReferralThankYou()">Claim my free month</button>
+</div>
+
 <div class="upload-card campus-compose">
   <p class="label" style="margin-top:0">Your campus name</p>
   <input type="text" id="campusName" placeholder="Display name" autocomplete="nickname" onchange="saveCampusName()"/>
@@ -471,11 +500,13 @@ textarea{min-height:56px}
 
 <script src="builtin-books.js"></script>
 <script src="lib/mastery.js"></script>
+<script src="lib/student-referral.js"></script>
 <script>
-/* BUILTIN_BOOKS + BUILTIN_TRACKS from builtin-books.js; TeachaidMastery from lib/mastery.js */
+/* BUILTIN_BOOKS + BUILTIN_TRACKS; TeachaidMastery; TeachaidReferral */
 if(typeof BUILTIN_BOOKS==='undefined'){var BUILTIN_BOOKS={};}
 if(typeof BUILTIN_TRACKS==='undefined'){var BUILTIN_TRACKS=[];}
 var TM=typeof TeachaidMastery!=='undefined'?TeachaidMastery:{MASTERY_MIN:91};
+var TR=typeof TeachaidReferral!=='undefined'?TeachaidReferral:null;
 
 var CUSTOM_KEY='teachaid_custom_books_v1';
 var BOOKS={};
@@ -888,10 +919,18 @@ var TIER_KEY='teachaid_tier_v1', VOICE_KEY='teachaid_voice_model_v1';
 
 var PRO_PAY_LINK='https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03';
 var PRO_SESSION_KEY='teachaid_pro_session_v1';
+var PRO_UNTIL_KEY='teachaid_pro_until_v1';
+var STUDENT_ACC_KEY='teachaid_student_account_v1';
 
 var tier=localStorage.getItem(TIER_KEY)||'basic';
-if(tier==='pro'&&!localStorage.getItem('teachaid_pro_session_v1')){tier='basic';localStorage.setItem(TIER_KEY,'basic');}
 var voiceModel=localStorage.getItem(VOICE_KEY)||'browser:auto';
+// Keep Pro if Stripe/lifetime session exists OR active referral month
+(function(){
+  var until=parseInt(localStorage.getItem(PRO_UNTIL_KEY)||'0',10)||0;
+  var sess=localStorage.getItem(PRO_SESSION_KEY);
+  if(tier==='pro'&&!sess&&until<=Date.now()){tier='basic';localStorage.setItem(TIER_KEY,'basic');}
+  if(until>Date.now()&&tier!=='pro'){tier='pro';localStorage.setItem(TIER_KEY,'pro');}
+})();
 
 var PK='teachaid_progress_v1';
 
@@ -1386,7 +1425,10 @@ function show(which){
     setCurrMode(currMode||'create');
   }
   if(which==='certs'||which==='home')renderCertsUI();
-  if(which==='student')renderCampusFeed();
+  if(which==='student'){
+    renderCampusFeed();
+    renderReferralUI();
+  }
   window.scrollTo(0,0);
 }
 function goHome(){show('home');cur=null}
@@ -1566,9 +1608,217 @@ var PRO_VOICES=[
   {id:'browser:premium',label:'On-device premium (fallback)',tier:'pro'}
 ];
 
-function isPro(){return tier==='pro'}
+function getProUntilMs(){
+  var n=parseInt(localStorage.getItem(PRO_UNTIL_KEY)||'0',10);
+  if(!Number.isFinite(n)||n<=0){
+    // sync from student account if present
+    try{
+      var acc=loadStudentAccount();
+      if(acc&&acc.proUntil)n=Number(acc.proUntil)||0;
+    }catch(e){n=0}
+  }
+  return n||0;
+}
+function isPro(){
+  if(getProUntilMs()>Date.now())return true;
+  if(tier==='pro'&&localStorage.getItem(PRO_SESSION_KEY))return true;
+  return tier==='pro'&&!!localStorage.getItem(PRO_SESSION_KEY);
+}
 function allVoiceOptions(){
   return isPro()? BASIC_VOICES.concat(PRO_VOICES) : BASIC_VOICES;
+}
+
+/* —— Student ID + referrals —— */
+function loadStudentAccount(){
+  if(!TR){
+    var fallback={studentId:'TA-LOCAL001',createdAt:new Date().toISOString(),referredBy:null,usedReferral:false,referrals:[],claimedThankYous:[],proUntil:getProUntilMs()};
+    try{
+      var raw=localStorage.getItem(STUDENT_ACC_KEY);
+      if(raw)return Object.assign(fallback,JSON.parse(raw));
+    }catch(e){}
+    return fallback;
+  }
+  var acc=null;
+  try{acc=JSON.parse(localStorage.getItem(STUDENT_ACC_KEY)||'null')}catch(e){acc=null}
+  acc=TR.ensureAccount(acc);
+  if(getProUntilMs()>acc.proUntil)acc.proUntil=getProUntilMs();
+  saveStudentAccount(acc);
+  return acc;
+}
+function saveStudentAccount(acc){
+  localStorage.setItem(STUDENT_ACC_KEY,JSON.stringify(acc));
+  if(acc&&acc.proUntil)localStorage.setItem(PRO_UNTIL_KEY,String(acc.proUntil));
+}
+function activateReferralPro(proUntil,unlock){
+  var until=Number(proUntil)||0;
+  if(until>Date.now()){
+    localStorage.setItem(PRO_UNTIL_KEY,String(until));
+    if(unlock)localStorage.setItem(PRO_SESSION_KEY,'referral:'+unlock);
+    tier='pro';
+    localStorage.setItem(TIER_KEY,'pro');
+    if(!voiceModel||voiceModel.indexOf('browser:')===0){
+      voiceModel='xai:eve';
+      localStorage.setItem(VOICE_KEY,voiceModel);
+    }
+    fillVoiceSelect();
+  }
+}
+function setReferralStatus(msg,kind){
+  var el=document.getElementById('referralStatus');
+  if(!el)return;
+  el.textContent=msg||'';
+  el.className='upload-status'+(kind?' '+kind:'');
+}
+function renderReferralUI(){
+  var acc=loadStudentAccount();
+  var idEl=document.getElementById('myStudentId');
+  if(idEl)idEl.value=acc.studentId||'';
+  var year=TR?TR.yearOf(new Date()):new Date().getUTCFullYear();
+  var used=TR?TR.referralsInYear(acc,year).length:(acc.referrals||[]).filter(function(r){return r&&r.year===year}).length;
+  var max=TR?TR.MAX_REFERRALS_PER_YEAR:4;
+  var stats=document.getElementById('referralStats');
+  if(stats)stats.textContent='Referrals claimed this year: '+used+' / '+max+(used>=max?' · limit reached until next year':'');
+  var proEl=document.getElementById('referralProStatus');
+  if(proEl){
+    var until=Math.max(getProUntilMs(),Number(acc.proUntil)||0);
+    if(until>Date.now()){
+      proEl.innerHTML='Pro active via referral until <strong style="color:#5eead4">'+new Date(until).toLocaleDateString()+'</strong>';
+    }else{
+      proEl.textContent='No active referral Pro month — share your ID or apply a friend’s.';
+    }
+  }
+  var applyBtn=document.getElementById('applyReferralBtn');
+  if(applyBtn){
+    applyBtn.disabled=!!acc.usedReferral;
+    applyBtn.textContent=acc.usedReferral?'Referral already used on this account':'Apply referral · get 1 month free';
+  }
+  if(acc.usedReferral&&acc.referredBy){
+    var inp=document.getElementById('referralInput');
+    if(inp&&!inp.value)inp.value=acc.referredBy;
+  }
+}
+function copyStudentId(){
+  var acc=loadStudentAccount();
+  var t=acc.studentId||'';
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){setReferralStatus('Student ID copied.','ok')});
+  }else prompt('Your Student ID',t);
+}
+function shareStudentId(){
+  var acc=loadStudentAccount();
+  var text='Join me on TEACHAiD! Use my Student ID '+acc.studentId+' when you sign up — we both get 1 month free Pro (I can refer up to 4 people/year).\nhttps://teachaid.vercel.app';
+  if(navigator.share){
+    navigator.share({title:'TEACHAiD Student ID',text:text}).catch(function(){copyTextFallback(text)});
+  }else copyTextFallback(text);
+}
+function copyTextFallback(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){setReferralStatus('Share text copied.','ok')});
+  }else prompt('Copy:',text);
+}
+function copyThankYou(){
+  var t=(document.getElementById('thankYouOut').value||'').trim();
+  if(!t)return;
+  copyTextFallback(t);
+  setReferralStatus('Thank-you code copied — send it to your friend.','ok');
+}
+async function applyFriendReferral(){
+  if(!TR){setReferralStatus('Referral module missing — hard refresh.','err');return}
+  var code=(document.getElementById('referralInput').value||'').trim();
+  var acc=loadStudentAccount();
+  var local=TR.applyReferralCode(acc,code);
+  if(!local.ok){setReferralStatus(local.error,'err');return}
+  setReferralStatus('Applying…','');
+  try{
+    var r=await fetch('/api/referral',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'sign_apply',
+        studentId:local.account.studentId,
+        referralCode:TR.normalizeStudentId(code)
+      })
+    });
+    var d=await r.json().catch(function(){return{}});
+    if(r.ok&&d.ok){
+      local.account.proUntil=Math.max(local.account.proUntil,Number(d.proUntil)||0);
+      saveStudentAccount(local.account);
+      activateReferralPro(local.account.proUntil,d.unlock);
+      var tyCode=d.thankYouCode||TR.encodeThankYou(d.thankYou||local.thankYou);
+      var box=document.getElementById('thankYouBox');
+      var out=document.getElementById('thankYouOut');
+      if(box)box.classList.remove('hidden');
+      if(out)out.value=tyCode;
+      localStorage.setItem('teachaid_last_thankyou',tyCode);
+      setReferralStatus('You got 1 month free Pro! Send the thank-you code to your friend so they get theirs.','ok');
+      renderReferralUI();
+      return;
+    }
+    // offline / API fail — still honor local rules
+    saveStudentAccount(local.account);
+    activateReferralPro(local.account.proUntil,'local-'+local.account.proUntil);
+    var ty2=TR.encodeThankYou(local.thankYou);
+    var box2=document.getElementById('thankYouBox');
+    var out2=document.getElementById('thankYouOut');
+    if(box2)box2.classList.remove('hidden');
+    if(out2)out2.value=ty2;
+    setReferralStatus((d.error?d.error+' · ':'')+'Local Pro month applied. Send thank-you code to your friend.','ok');
+    renderReferralUI();
+  }catch(e){
+    saveStudentAccount(local.account);
+    activateReferralPro(local.account.proUntil,'local-'+local.account.proUntil);
+    var ty3=TR.encodeThankYou(local.thankYou);
+    document.getElementById('thankYouBox').classList.remove('hidden');
+    document.getElementById('thankYouOut').value=ty3;
+    setReferralStatus('Network issue — Pro month saved on this device. Send thank-you code to your friend.','ok');
+    renderReferralUI();
+  }
+}
+async function claimReferralThankYou(){
+  if(!TR){setReferralStatus('Referral module missing.','err');return}
+  var raw=(document.getElementById('thankYouIn').value||'').trim();
+  var ty=TR.decodeThankYou(raw);
+  if(!ty){setReferralStatus('Paste a valid TEACHAiD_TY thank-you code.','err');return}
+  var acc=loadStudentAccount();
+  var local=TR.claimThankYou(acc,ty);
+  if(!local.ok){setReferralStatus(local.error,'err');return}
+  setReferralStatus('Claiming…','');
+  var year=TR.yearOf(new Date());
+  var countBefore=TR.referralsInYear(acc,year).length;
+  try{
+    var r=await fetch('/api/referral',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'sign_claim',
+        studentId:local.account.studentId,
+        thankYouCode:raw,
+        thankYou:ty,
+        referralsThisYear:countBefore
+      })
+    });
+    var d=await r.json().catch(function(){return{}});
+    if(r.ok&&d.ok){
+      local.account.proUntil=Math.max(local.account.proUntil,Number(d.proUntil)||0);
+      saveStudentAccount(local.account);
+      activateReferralPro(local.account.proUntil,d.unlock);
+      setReferralStatus('Referral credited · 1 month free Pro unlocked. ('+local.referralsThisYear+' / '+TR.MAX_REFERRALS_PER_YEAR+' this year)','ok');
+      document.getElementById('thankYouIn').value='';
+      renderReferralUI();
+      return;
+    }
+    if(r.status===403){setReferralStatus(d.error||'Yearly limit reached','err');return}
+    saveStudentAccount(local.account);
+    activateReferralPro(local.account.proUntil,'local-'+local.account.proUntil);
+    setReferralStatus('Claimed locally · 1 month Pro. ('+local.referralsThisYear+' / 4 this year)','ok');
+    document.getElementById('thankYouIn').value='';
+    renderReferralUI();
+  }catch(e){
+    saveStudentAccount(local.account);
+    activateReferralPro(local.account.proUntil,'local-'+local.account.proUntil);
+    setReferralStatus('Claimed on this device · 1 month Pro.','ok');
+    renderReferralUI();
+  }
 }
 function fillVoiceSelect(){
   var sel=document.getElementById('voiceModel');
@@ -1607,8 +1857,8 @@ function onVoiceModelChange(){
   localStorage.setItem(VOICE_KEY,voiceModel);
 }
 function setTier(t){
-  if(t==='pro' && !localStorage.getItem(PRO_SESSION_KEY)){
-    // require paid session — open checkout UI
+  if(t==='pro' && !localStorage.getItem(PRO_SESSION_KEY) && getProUntilMs()<=Date.now()){
+    // require paid session or active referral month — open checkout UI
     showVoicePro();
     return;
   }
@@ -1623,12 +1873,14 @@ function setTier(t){
   if(card && t==='basic') card.style.display='none';
   var hint=document.getElementById('voiceHint');
   if(hint) hint.textContent=isPro()
-    ? 'Pro · Grok/xAI neural voices · falls back on-device if needed'
+    ? (getProUntilMs()>Date.now()
+      ? 'Pro · referral month until '+new Date(getProUntilMs()).toLocaleDateString()
+      : 'Pro · Grok/xAI neural voices · falls back on-device if needed')
     : 'Basic · strong on-device voice · Get Pro for Grok voices ($9)';
 }
 function activatePro(){
-  /* only after Stripe verify stored PRO_SESSION_KEY */
-  if(!localStorage.getItem(PRO_SESSION_KEY)){showVoicePro();return}
+  /* Stripe/lifetime session OR active referral Pro month */
+  if(!localStorage.getItem(PRO_SESSION_KEY)&&getProUntilMs()<=Date.now()){showVoicePro();return}
   tier='pro';
   localStorage.setItem(TIER_KEY,'pro');
   // Default Pro to best on-device voice; user can pick neural if server supports it
@@ -1702,8 +1954,39 @@ async function verifyProSession(sessionId){
   }
 }
 async function restoreProFromSession(){
+  // Active referral month
+  if(getProUntilMs()>Date.now()){
+    tier='pro';
+    localStorage.setItem(TIER_KEY,'pro');
+    fillVoiceSelect();
+  }
   var sid=localStorage.getItem(PRO_SESSION_KEY);
   if(!sid)return;
+  // Referral unlock token
+  if(String(sid).indexOf('referral:')===0){
+    var token=String(sid).slice('referral:'.length);
+    if(token.indexOf('local-')===0){
+      if(getProUntilMs()>Date.now())activatePro();
+      else { localStorage.removeItem(PRO_SESSION_KEY); if(getProUntilMs()<=Date.now())setTier('basic'); }
+      return;
+    }
+    try{
+      var rr=await fetch('/api/referral',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'verify',unlock:token})});
+      var dd=await rr.json().catch(function(){return{}});
+      if(rr.ok&&dd.ok&&dd.pro){
+        if(dd.proUntil)localStorage.setItem(PRO_UNTIL_KEY,String(dd.proUntil));
+        activatePro();
+        return;
+      }
+      if(dd.expired){
+        localStorage.removeItem(PRO_SESSION_KEY);
+        if(getProUntilMs()<=Date.now()){localStorage.removeItem(PRO_UNTIL_KEY);setTier('basic')}
+      }
+    }catch(e){
+      if(getProUntilMs()>Date.now())activatePro();
+    }
+    return;
+  }
   // Lifetime unlocks
   if(String(sid).indexOf('lifetime:')===0){
     var em=localStorage.getItem('teachaid_lifetime_email')||'';
@@ -1993,11 +2276,12 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 renderCustomBooksUI();
 renderBuiltinCatalog();
 renderCertsUI();
+try{loadStudentAccount();renderReferralUI()}catch(e){}
 
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v18';
+  var VER='v19';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

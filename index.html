@@ -3384,7 +3384,7 @@ try{loadStudentAccount();renderReferralUI();refreshSubmitPayUi()}catch(e){}
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v23';
+  var VER='v27';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

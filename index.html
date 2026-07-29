@@ -170,8 +170,11 @@ textarea{min-height:56px}
   <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#5eead4">Basic (included)</strong> — strong on-device teacher voices: Auto, Soft, Clear, Warm. Free &amp; private.</p>
   <p style="font-size:.85rem;color:#9ca3af;margin-bottom:10px"><strong style="color:#fbbf24">Pro · $9 once</strong> — Grok / SpaceXAI neural voices (Eve, Ara, Leo, Rex…). Unlocks after Stripe checkout.</p>
   <a class="btn" id="proCheckoutBtn" href="https://buy.stripe.com/aFa6oIaZv69iclD9kA6wE03" style="display:block;text-align:center;text-decoration:none">Unlock Pro with Stripe · $9</a>
+  <p class="label" style="margin-top:14px">Lifetime / invite</p>
+  <input type="email" id="lifetimeEmail" placeholder="you@email.com" autocomplete="email" style="margin-bottom:8px"/>
+  <button class="btn secondary" type="button" onclick="redeemLifetime()">Redeem lifetime Pro</button>
   <button class="btn secondary" type="button" style="margin-top:8px" onclick="setTier('basic');document.getElementById('voiceProCard').style.display='none'">Stay on Basic</button>
-  <p class="voice-hint">After payment you return here automatically. Pro is verified with Stripe before voices unlock.</p>
+  <p class="voice-hint">Lifetime members enter the invited email. Stripe members pay once. Grok/xAI voices after unlock.</p>
 </div>
 
 <p class="legal">TEACHAiD is a licensed and trademarked entity of <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>. Each book includes a certified teacher who unlocks the next chapter when you are ready.</p>
@@ -712,6 +715,36 @@ function activatePro(){
   var card=document.getElementById('voiceProCard');
   if(card) card.style.display='none';
 }
+
+async function redeemLifetime(emailOverride){
+  var input=document.getElementById('lifetimeEmail');
+  var email=(emailOverride||(input&&input.value)||'').trim();
+  if(!email){ alert('Enter your invited email'); return false; }
+  try{
+    var r=await fetch('/api/pro-lifetime',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email})
+    });
+    var d=await r.json().catch(function(){return{}});
+    if(!r.ok||!d.ok||!d.pro){
+      var h=document.getElementById('voiceHint');
+      if(h) h.textContent=d.error||'Not on lifetime list';
+      return false;
+    }
+    localStorage.setItem(PRO_SESSION_KEY, d.unlock||('lifetime:'+email));
+    localStorage.setItem('teachaid_lifetime_email', (d.email||email).toLowerCase());
+    activatePro();
+    var h2=document.getElementById('voiceHint');
+    if(h2) h2.textContent='Lifetime Pro unlocked for '+(d.email||email)+' · Grok voices ready';
+    return true;
+  }catch(e){
+    var h3=document.getElementById('voiceHint');
+    if(h3) h3.textContent='Could not redeem lifetime — try again';
+    return false;
+  }
+}
+
 function startProCheckout(){
   window.location.href=PRO_PAY_LINK;
 }
@@ -746,19 +779,29 @@ async function verifyProSession(sessionId){
 async function restoreProFromSession(){
   var sid=localStorage.getItem(PRO_SESSION_KEY);
   if(!sid)return;
-  // Trust prior verify offline; optional re-check when online
+  // Lifetime unlocks
+  if(String(sid).indexOf('lifetime:')===0){
+    var em=localStorage.getItem('teachaid_lifetime_email')||'';
+    if(em){
+      var ok=await redeemLifetime(em);
+      if(ok)return;
+    }else{
+      // parse email from unlock lifetime:email:sig
+      var parts=String(sid).split(':');
+      if(parts.length>=2) await redeemLifetime(parts[1]);
+    }
+    return;
+  }
   if(tier!=='pro'){
     try{
       var r=await fetch('/api/pro-verify?session_id='+encodeURIComponent(sid));
       var d=await r.json().catch(function(){return{}});
       if(r.ok&&d.ok&&d.pro){activatePro();return}
-      // if network says unpaid, drop pro
       if(r.status===402||r.status===403){
         localStorage.removeItem(PRO_SESSION_KEY);
         setTier('basic');
       }
     }catch(e){
-      // offline: keep pro if previously set
       if(localStorage.getItem(TIER_KEY)==='pro')activatePro();
     }
   }
@@ -1025,7 +1068,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
 /* Force fresh app after deploy — unregister stale SWs then register v6 */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v10';
+  var VER='v11';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));
@@ -1035,7 +1078,7 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       return Promise.all(keys.map(function(k){return caches.delete(k)}));
     }).then(function(){
       localStorage.setItem('teachaid_sw_ver',VER);
-      return navigator.serviceWorker.register('./sw.js?v=10');
+      return navigator.serviceWorker.register('./sw.js?v=11');
     }).then(function(){
       // one hard reload so first paint is not stale
       if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
@@ -1044,14 +1087,25 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
       }
     }).catch(function(){});
   }else{
-    navigator.serviceWorker.register('./sw.js?v=10').catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=11').catch(function(){});
   }
 })();
 fillVoiceSelect();
 (async function(){
   var params=new URLSearchParams(location.search);
   var sid=params.get('pro_session')||params.get('session_id');
-  if(sid){ await verifyProSession(sid); }
+  var life=params.get('lifetime_email')||params.get('lifetime');
+  if(life){
+    var inp=document.getElementById('lifetimeEmail');
+    if(inp) inp.value=life;
+    await redeemLifetime(life);
+    try{
+      var u=new URL(location.href);
+      u.searchParams.delete('lifetime_email');
+      u.searchParams.delete('lifetime');
+      history.replaceState({},'',u.pathname+u.search+u.hash);
+    }catch(e){}
+  } else if(sid){ await verifyProSession(sid); }
   else { await restoreProFromSession(); }
   fillVoiceSelect();
 })();

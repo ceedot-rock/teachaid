@@ -1,6 +1,6 @@
 # TEACHAiD
 
-Interactive school app for complete beginners — learn by doing, ask anything (text + voice).
+Interactive school app for complete beginners — learn by doing, ask anything (text + voice). **School in session** (red light) = live voice class with textbook follow; typing = text↔text.
 
 ## Live app
 

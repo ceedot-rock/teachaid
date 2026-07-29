@@ -1,5 +1,5 @@
-/* teachaid-v26 — network-first shell; inject path-ui; never cache API */
-const CACHE = 'teachaid-v26';
+/* teachaid-v27 — network-first shell; school session + path-ui; never cache API */
+const CACHE = 'teachaid-v27';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

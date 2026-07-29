@@ -388,6 +388,62 @@ input[type=range]{width:100%;accent-color:var(--teal)}
   box-shadow:0 4px 12px rgba(245,158,11,.3);
 }
 
+/* —— School in session (voice classroom) —— */
+.session-bar{
+  display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 14px;
+  background:rgba(0,0,0,.32);border:1px solid rgba(36,48,68,.9);border-radius:14px;
+}
+.session-btn{
+  display:inline-flex;align-items:center;gap:10px;flex:1;min-width:0;
+  background:var(--bg-soft);border:1px solid var(--line);color:var(--text);
+  padding:11px 14px;border-radius:12px;font-size:.84rem;font-weight:750;cursor:pointer;
+  text-align:left;
+}
+.session-btn .sess-label{display:flex;flex-direction:column;gap:2px;min-width:0}
+.session-btn .sess-label strong{font-size:.86rem}
+.session-btn .sess-label em{font-style:normal;font-size:.68rem;color:var(--muted2);font-weight:550}
+.session-btn.on{
+  border-color:rgba(248,113,113,.55);background:rgba(248,113,113,.1);
+  box-shadow:0 0 0 3px rgba(248,113,113,.12),0 0 24px rgba(248,113,113,.15);
+}
+.session-btn.on .sess-label em{color:#fecaca}
+.red-light{
+  width:14px;height:14px;border-radius:50%;flex-shrink:0;
+  background:#3f3f46;border:2px solid #52525b;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);
+}
+.session-btn.on .red-light{
+  background:#ef4444;border-color:#fca5a5;
+  box-shadow:0 0 0 3px rgba(239,68,68,.25),0 0 14px rgba(239,68,68,.85);
+  animation:pulse-red 1.4s ease-in-out infinite;
+}
+@keyframes pulse-red{
+  0%,100%{box-shadow:0 0 0 3px rgba(239,68,68,.2),0 0 10px rgba(239,68,68,.7)}
+  50%{box-shadow:0 0 0 5px rgba(239,68,68,.12),0 0 18px rgba(239,68,68,.95)}
+}
+.session-status{font-size:.72rem;color:var(--muted2);line-height:1.35;max-width:42%}
+body.school-session .chat-log{max-height:18vh;opacity:.72}
+body.school-session .chat-log .bubble{font-size:.82rem;padding:8px 11px}
+body.school-session .chat-log .hear-btn{display:none}
+/* Send stays available for text↔text; voice class uses mic */
+body.school-session .chat-row input::placeholder{color:#a1a1aa}
+body.school-session.session-typing #sendBtn{
+  box-shadow:0 0 0 2px rgba(147,197,253,.35);
+}
+body.school-session #lesson{
+  scroll-margin-top:80px;
+  outline:1px solid rgba(248,113,113,.2);
+  border-radius:12px;
+}
+#lesson .tb-block{
+  transition:background .35s,box-shadow .35s,border-color .35s;
+  border-radius:8px;padding:2px 4px;margin:0 -4px;
+}
+#lesson .tb-block.tb-focus{
+  background:rgba(251,191,36,.12);
+  box-shadow:inset 3px 0 0 var(--gold);
+  border-radius:0 8px 8px 0;
+}
+
 /* Certificates */
 .cert-card{
   background:linear-gradient(145deg,rgba(251,191,36,.1) 0%,var(--bg-card) 50%);
@@ -556,6 +612,17 @@ input[type=range]{width:100%;accent-color:var(--teal)}
     <button type="button" id="paceSlow" onclick="setPace('slow')">Slow</button>
     <button type="button" class="on" id="paceMed" onclick="setPace('medium')">My pace</button>
     <button type="button" id="paceFast" onclick="setPace('fast')">Faster</button>
+  </div>
+
+  <div class="session-bar" id="sessionBar">
+    <button type="button" class="session-btn" id="sessionBtn" onclick="toggleSchoolSession()" aria-pressed="false">
+      <span class="red-light" id="sessionLight" aria-hidden="true"></span>
+      <span class="sess-label">
+        <strong id="sessionBtnTitle">School in session</strong>
+        <em id="sessionBtnSub">Tap for live voice class · type anytime for text</em>
+      </span>
+    </button>
+    <span class="session-status" id="sessionStatus">Off — chat by text or mic. Red light = class is live (speech).</span>
   </div>
 
   <div class="voice-bar" id="voiceBar">
@@ -1309,6 +1376,12 @@ var cur=null,chi=0,pace='medium';
 /** per-book chat histories */
 var histories={};
 var speakOn=true,recog=null,listening=false,audioEl=null;
+/* School in session: red light = live voice class. Typing = text↔text. */
+var schoolSession=false;
+var sessionTextTurn=false; /* this turn used keyboard → text-to-text */
+var sessionListenLoop=false;
+var lessonFollowIdx=0;
+var SESSION_KEY='teachaid_school_session_v1';
 var TIER_KEY='teachaid_tier_v1', VOICE_KEY='teachaid_voice_model_v1';
 
 /** Live Stripe payment links (see docs/PRO_STRIPE.md) */
@@ -1865,7 +1938,21 @@ function show(which){
   }
   window.scrollTo(0,0);
 }
-function goHome(){show('home');cur=null}
+function goHome(){
+  if(schoolSession){
+    schoolSession=false;
+    sessionListenLoop=false;
+    sessionTextTurn=false;
+    stopMicSoft();
+    clearLessonFocus();
+    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+    try{ if(audioEl) audioEl.pause(); }catch(e){}
+    try{ localStorage.setItem(SESSION_KEY,'0'); }catch(e){}
+    applySessionUi();
+  }
+  show('home');
+  cur=null;
+}
 function finishBook(){goHome()}
 function openBook(id){
   if(!BOOKS[id]||!BOOKS[id].ch||!BOOKS[id].ch.length){
@@ -1941,10 +2028,78 @@ function renderCh(){
   }
   renderChNavOnly();
   document.getElementById('lesson').innerHTML=c.h;
-  document.getElementById('chatIn').placeholder='Answer '+b.teacher+' or ask about “'+c.n+'”…';
+  prepareLessonFollow();
+  document.getElementById('chatIn').placeholder=schoolSession
+    ? 'Type to leave voice · text chat with '+b.teacher
+    : 'Answer '+b.teacher+' or ask about “'+c.n+'”…';
   renderGradeUI();
   setTimeout(initW,30);
-  window.scrollTo(0,0);
+  if(!schoolSession) window.scrollTo(0,0);
+  else scrollLessonIntoView();
+  applySessionUi();
+}
+
+function prepareLessonFollow(){
+  lessonFollowIdx=0;
+  var lesson=document.getElementById('lesson');
+  if(!lesson)return;
+  var nodes=lesson.querySelectorAll('h2,h3,p,li,.callout,.try,.idea');
+  if(!nodes.length){
+    // wrap plain text children
+    Array.prototype.forEach.call(lesson.childNodes,function(n){
+      if(n.nodeType===1) n.classList&&n.classList.add('tb-block');
+    });
+    return;
+  }
+  Array.prototype.forEach.call(nodes,function(el){
+    el.classList.add('tb-block');
+    el.classList.remove('tb-focus');
+  });
+}
+function scrollLessonIntoView(){
+  var lesson=document.getElementById('lesson');
+  if(lesson) try{ lesson.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
+}
+function clearLessonFocus(){
+  var lesson=document.getElementById('lesson');
+  if(!lesson)return;
+  Array.prototype.forEach.call(lesson.querySelectorAll('.tb-focus'),function(el){
+    el.classList.remove('tb-focus');
+  });
+}
+/** Advance textbook highlight while teacher speaks (session mode). */
+function followTextbookStep(step){
+  var lesson=document.getElementById('lesson');
+  if(!lesson)return;
+  var blocks=lesson.querySelectorAll('.tb-block');
+  if(!blocks.length)return;
+  clearLessonFocus();
+  var i=typeof step==='number'?step:lessonFollowIdx;
+  if(i<0)i=0;
+  if(i>=blocks.length)i=blocks.length-1;
+  lessonFollowIdx=i;
+  var el=blocks[i];
+  el.classList.add('tb-focus');
+  try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+}
+function followTextbookByProgress(ratio){
+  var lesson=document.getElementById('lesson');
+  if(!lesson)return;
+  var blocks=lesson.querySelectorAll('.tb-block');
+  if(!blocks.length)return;
+  var r=Math.max(0,Math.min(1,ratio||0));
+  var i=Math.min(blocks.length-1, Math.floor(r*blocks.length));
+  followTextbookStep(i);
+}
+function advanceTextbookOnTeacherTurn(){
+  if(!schoolSession||sessionTextTurn)return;
+  var lesson=document.getElementById('lesson');
+  if(!lesson)return;
+  var blocks=lesson.querySelectorAll('.tb-block');
+  if(!blocks.length)return;
+  followTextbookStep(Math.min(lessonFollowIdx, blocks.length-1));
+  // next turn peeks further into the chapter
+  if(lessonFollowIdx<blocks.length-1) lessonFollowIdx++;
 }
 function noteChapterChange(){
   addBubble('bot',"Okay — now we're on “'+BOOKS[cur].ch[chi].n+'”. Ask me anything, or tap Teach me. When it clicks, try Am I ready?",false);
@@ -2014,8 +2169,16 @@ function addBubble(role,text,store){
   var log=document.getElementById('chatLog');
   var d=document.createElement('div');
   d.className='bubble '+(role==='user'?'user':role==='err'?'err':'bot');
-  d.textContent=text;
-  if(role==='bot' && text){
+  /* In live session, keep log thin for speech turns; full text when typing. */
+  if(schoolSession && !sessionTextTurn && role==='bot'){
+    d.textContent='🎙 '+String(text||'').slice(0,90)+(String(text||'').length>90?'…':'');
+    d.title=text||'';
+  }else if(schoolSession && !sessionTextTurn && role==='user'){
+    d.textContent='🎤 '+(text||'');
+  }else{
+    d.textContent=text;
+  }
+  if(role==='bot' && text && (!schoolSession || sessionTextTurn)){
     var hb=document.createElement('button');
     hb.type='button';
     hb.className='hear-btn';
@@ -2814,40 +2977,52 @@ function ensureVoices(cb){
   setTimeout(finish, 400);
 }
 function speakBrowser(text, style, fromUserGesture){
-  if(!window.speechSynthesis){
-    var h=document.getElementById('voiceHint');
-    if(h) h.textContent='Speech not supported in this browser — read the text, or try Chrome.';
-    return;
-  }
-  var clean=String(text).replace(/\s+/g,' ').trim();
-  if(!clean)return;
-  if(clean.length>700)clean=clean.slice(0,700)+'…';
-  ensureVoices(function(){
-    try{ speechSynthesis.cancel(); }catch(e){}
-    // Chrome bug: cancel then speak needs a tick
-    setTimeout(function(){
-      var u=new SpeechSynthesisUtterance(clean);
-      u.lang='en-US';
-      if(style==='soft'){u.rate=0.92;u.pitch=1.06}
-      else if(style==='clear'){u.rate=0.98;u.pitch=1.0}
-      else if(style==='warm'){u.rate=0.94;u.pitch=1.04}
-      else if(style==='premium'){u.rate=0.96;u.pitch=1.02}
-      else {
-        u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
-        u.pitch=1.02;
-      }
-      if(pace==='slow')u.rate=Math.min(u.rate,0.9);
-      if(pace==='fast')u.rate=Math.max(u.rate,1.0);
-      var v=pickVoice(style||'auto');
-      if(v){u.voice=v; if(v.lang) u.lang=v.lang}
-      u.onerror=function(ev){
-        var h=document.getElementById('voiceHint');
-        if(h) h.textContent='Voice blocked — tap ▶ Hear under the message';
-      };
-      speechSynthesis.speak(u);
-      // Some mobile browsers need resume
-      if(speechSynthesis.paused) try{speechSynthesis.resume()}catch(e){}
-    }, fromUserGesture?0:60);
+  return new Promise(function(resolve){
+    if(!window.speechSynthesis){
+      var h=document.getElementById('voiceHint');
+      if(h) h.textContent='Speech not supported in this browser — read the text, or try Chrome.';
+      resolve();
+      return;
+    }
+    var clean=String(text).replace(/\s+/g,' ').trim();
+    if(!clean){ resolve(); return; }
+    if(clean.length>700)clean=clean.slice(0,700)+'…';
+    ensureVoices(function(){
+      try{ speechSynthesis.cancel(); }catch(e){}
+      setTimeout(function(){
+        var u=new SpeechSynthesisUtterance(clean);
+        u.lang='en-US';
+        if(style==='soft'){u.rate=0.92;u.pitch=1.06}
+        else if(style==='clear'){u.rate=0.98;u.pitch=1.0}
+        else if(style==='warm'){u.rate=0.94;u.pitch=1.04}
+        else if(style==='premium'){u.rate=0.96;u.pitch=1.02}
+        else {
+          u.rate=pace==='slow'?0.9:pace==='fast'?1.02:0.96;
+          u.pitch=1.02;
+        }
+        if(pace==='slow')u.rate=Math.min(u.rate,0.9);
+        if(pace==='fast')u.rate=Math.max(u.rate,1.0);
+        var v=pickVoice(style||'auto');
+        if(v){u.voice=v; if(v.lang) u.lang=v.lang}
+        var charTotal=Math.max(1, clean.length);
+        var lastBound=0;
+        u.onboundary=function(ev){
+          if(!schoolSession||sessionTextTurn)return;
+          if(ev&&typeof ev.charIndex==='number'){
+            lastBound=ev.charIndex;
+            followTextbookByProgress(lastBound/charTotal);
+          }
+        };
+        u.onend=function(){ resolve(); };
+        u.onerror=function(){
+          var h2=document.getElementById('voiceHint');
+          if(h2) h2.textContent='Voice blocked — tap ▶ Hear or start class again (user gesture).';
+          resolve();
+        };
+        speechSynthesis.speak(u);
+        if(speechSynthesis.paused) try{speechSynthesis.resume()}catch(e){}
+      }, fromUserGesture?0:60);
+    });
   });
 }
 async function speakNeural(text, model){
@@ -2866,14 +3041,38 @@ async function speakNeural(text, model){
   var url=URL.createObjectURL(blob);
   if(audioEl){try{audioEl.pause()}catch(e){}}
   audioEl=new Audio(url);
-  audioEl.onended=function(){URL.revokeObjectURL(url)};
-  await audioEl.play();
+  return new Promise(function(resolve, reject){
+    var tick=null;
+    audioEl.onplay=function(){
+      if(!schoolSession||sessionTextTurn)return;
+      var start=Date.now();
+      var dur=(audioEl.duration&&isFinite(audioEl.duration)?audioEl.duration:8)*1000;
+      tick=setInterval(function(){
+        var t=Date.now()-start;
+        followTextbookByProgress(Math.min(0.99, t/dur));
+      }, 400);
+    };
+    audioEl.onended=function(){
+      if(tick) clearInterval(tick);
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    audioEl.onerror=function(){
+      if(tick) clearInterval(tick);
+      URL.revokeObjectURL(url);
+      reject(new Error('audio play failed'));
+    };
+    audioEl.play().catch(function(e){
+      if(tick) clearInterval(tick);
+      URL.revokeObjectURL(url);
+      reject(e);
+    });
+  });
 }
 async function speak(text, fromUserGesture){
   if(!speakOn)return;
   var model=voiceModel||'browser:auto';
   try{
-    // Neural only if Pro AND model is cloud AND user gesture preferred for audio.play
     if(isPro() && (model.indexOf('xai:')===0 || model.indexOf('openai:')===0 || model.indexOf('elevenlabs:')===0)){
       try{
         await speakNeural(text, model);
@@ -2883,7 +3082,7 @@ async function speak(text, fromUserGesture){
       }catch(e){
         var hint2=document.getElementById('voiceHint');
         if(hint2) hint2.textContent='Neural not available yet — using on-device teacher voice. Tap ▶ Hear if silent.';
-        speakBrowser(text, 'premium', !!fromUserGesture);
+        await speakBrowser(text, 'premium', !!fromUserGesture);
         return;
       }
     }
@@ -2892,7 +3091,7 @@ async function speak(text, fromUserGesture){
     else if(model==='browser:clear')style='clear';
     else if(model==='browser:warm')style='warm';
     else if(model==='browser:premium')style='premium';
-    speakBrowser(text, style, !!fromUserGesture);
+    await speakBrowser(text, style, !!fromUserGesture);
   }catch(e){
     var h=document.getElementById('voiceHint');
     if(h) h.textContent='Tap ▶ Hear under the teacher message';
@@ -2900,6 +3099,100 @@ async function speak(text, fromUserGesture){
 }
 if(window.speechSynthesis){
   speechSynthesis.onvoiceschanged=function(){pickVoice('auto')};
+}
+
+function applySessionUi(){
+  var on=!!schoolSession;
+  document.body.classList.toggle('school-session', on);
+  var btn=document.getElementById('sessionBtn');
+  var st=document.getElementById('sessionStatus');
+  var title=document.getElementById('sessionBtnTitle');
+  var sub=document.getElementById('sessionBtnSub');
+  var hint=document.getElementById('voiceHint');
+  if(btn){
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on?'true':'false');
+  }
+  if(title) title.textContent=on?'School is in session':'School in session';
+  if(sub) sub.textContent=on?'Red light on · speak with your teacher · type to switch to text':'Tap for live voice class · type anytime for text';
+  if(st){
+    st.textContent=on
+      ? 'Live · speech class. Textbook follows the lesson. Type in the box → text↔text.'
+      : 'Off — chat by text or mic. Red light = class is live (speech).';
+  }
+  if(hint){
+    hint.textContent=on
+      ? 'Class live · mic listens after the teacher finishes · type anytime for text chat'
+      : 'Mic + spoken answers · TEACHAiD / SPLabs';
+  }
+  var inp=document.getElementById('chatIn');
+  if(inp && cur && BOOKS[cur]){
+    inp.placeholder=on
+      ? 'Type to chat by text (leaves pure voice for this turn)…'
+      : 'Answer '+BOOKS[cur].teacher+' or ask…';
+  }
+  var speakBtn=document.getElementById('speakBtn');
+  if(on){
+    speakOn=true;
+    if(speakBtn){speakBtn.className='icon-btn speak-on';speakBtn.textContent='🔊'}
+  }
+}
+function toggleSchoolSession(){
+  if(!cur){
+    var h=document.getElementById('voiceHint');
+    if(h) h.textContent='Open a book first, then start class.';
+    return;
+  }
+  schoolSession=!schoolSession;
+  try{ localStorage.setItem(SESSION_KEY, schoolSession?'1':'0'); }catch(e){}
+  // Unlock audio on the gesture that starts class
+  try{
+    if(window.speechSynthesis){
+      var warm=new SpeechSynthesisUtterance(' ');
+      warm.volume=0; speechSynthesis.speak(warm); speechSynthesis.cancel();
+    }
+  }catch(e){}
+  applySessionUi();
+  if(schoolSession){
+    prepareLessonFollow();
+    followTextbookStep(0);
+    scrollLessonIntoView();
+    sessionTextTurn=false;
+    sessionListenLoop=true;
+    // Start class with a spoken teach turn
+    teacherAction('explain');
+  }else{
+    sessionListenLoop=false;
+    stopMicSoft();
+    clearLessonFocus();
+    if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
+    if(audioEl){ try{ audioEl.pause(); }catch(e){} }
+  }
+}
+function stopMicSoft(){
+  listening=false;
+  sessionListenLoop=false;
+  try{ if(recog) recog.stop(); }catch(e){}
+  var mb=document.getElementById('micBtn');
+  if(mb) mb.className='icon-btn';
+}
+function resumeSessionListen(){
+  if(!schoolSession||sessionTextTurn)return;
+  sessionListenLoop=true;
+  setTimeout(function(){
+    if(!schoolSession)return;
+    var r=getRecog();
+    if(!r||listening)return;
+    try{
+      r.start();
+      listening=true;
+      document.getElementById('micBtn').className='icon-btn on';
+      document.getElementById('voiceHint').textContent='Listening… your turn';
+      document.getElementById('sessionStatus').textContent='Live · listening for you';
+    }catch(e){
+      document.getElementById('voiceHint').textContent='Tap 🎤 when ready to speak';
+    }
+  }, 450);
 }
 
 function getRecog(){
@@ -2914,23 +3207,38 @@ function getRecog(){
     var t='';
     for(var i=ev.resultIndex;i<ev.results.length;i++)if(ev.results[i].isFinal)t+=ev.results[i][0].transcript;
     t=t.trim();
-    if(t){document.getElementById('chatIn').value=t;sendChat()}
+    if(t){
+      /* Voice turns stay in session speech channel */
+      sessionTextTurn=false;
+      document.getElementById('chatIn').value='';
+      callTeacher('ask', t);
+    }
   };
-  recog.onerror=function(){
+  recog.onerror=function(ev){
     listening=false;
     document.getElementById('micBtn').className='icon-btn';
-    document.getElementById('voiceHint').textContent='Mic error — type instead.';
+    var err=(ev&&ev.error)||'';
+    if(schoolSession && (err==='no-speech'||err==='aborted')){
+      document.getElementById('voiceHint').textContent='Still in session — tap 🎤 or speak after the teacher.';
+      return;
+    }
+    document.getElementById('voiceHint').textContent='Mic error — type instead for text chat.';
   };
   recog.onend=function(){
     listening=false;
     document.getElementById('micBtn').className='icon-btn';
+    if(schoolSession && sessionListenLoop && !sessionTextTurn){
+      /* do not auto-restart mid-teacher-speech; resumeSessionListen handles it */
+    }
   };
   return recog;
 }
 function toggleMic(){
   var r=getRecog();
   if(!r){document.getElementById('voiceHint').textContent='Voice input not supported here — type your question.';return}
-  if(listening){try{r.stop()}catch(e){}listening=false;document.getElementById('micBtn').className='icon-btn';return}
+  if(listening){try{r.stop()}catch(e){}listening=false;sessionListenLoop=false;document.getElementById('micBtn').className='icon-btn';return}
+  sessionTextTurn=false;
+  sessionListenLoop=!!schoolSession;
   try{r.start();listening=true;document.getElementById('micBtn').className='icon-btn on';document.getElementById('voiceHint').textContent='Listening…'}catch(e){document.getElementById('voiceHint').textContent='Could not start mic.'}
 }
 
@@ -2938,6 +3246,7 @@ function teacherPayload(mode,extraMessages){
   var b=BOOKS[cur];
   var c=b.ch[chi];
   var prog=getProgress(cur);
+  var channel=(schoolSession && !sessionTextTurn)?'voice':'text';
   return {
     bookId:cur,
     bookTitle:b.title,
@@ -2948,6 +3257,8 @@ function teacherPayload(mode,extraMessages){
     materials:materialsForBook(cur),
     mode:mode,
     paceNote:pace,
+    channel:channel,
+    schoolSession:!!schoolSession,
     progress:{unlockedThrough:prog.unlockedThrough,grades:prog.grades},
     messages:extraMessages||getHist()
   };
@@ -2960,13 +3271,21 @@ async function callTeacher(mode,userLine){
     return;
   }
   var btn=document.getElementById('sendBtn');
-  btn.disabled=true;
-  btn.textContent=mode==='check'?'Grading…':'Teaching…';
+  var voiceTurn=schoolSession && !sessionTextTurn;
+  if(btn){
+    btn.disabled=true;
+    btn.textContent=mode==='check'?'Grading…':(voiceTurn?'Speaking…':'Teaching…');
+  }
   if(userLine){
     addBubble('user',userLine,false);
     getHist().push({role:'user',content:userLine});
   }
   if(isTrialActive()&&!isFullPro())bumpTrialMsg();
+  if(voiceTurn){
+    try{ if(recog&&listening) recog.stop(); }catch(e){}
+    listening=false;
+    sessionListenLoop=false;
+  }
   try{
     var r=await fetch('/api/chat',{
       method:'POST',
@@ -2978,16 +3297,28 @@ async function callTeacher(mode,userLine){
     var reply=data.reply||'…';
     getHist().push({role:'assistant',content:reply});
     addBubble('bot',reply,false);
-    // Auto-speak may be blocked after async fetch — ▶ Hear always available
-    speak(reply, false);
+    advanceTextbookOnTeacherTurn();
+    if(voiceTurn){
+      /* Voice class: always speak; textbook is the reading surface */
+      speakOn=true;
+      await speak(reply, true);
+      resumeSessionListen();
+    }else{
+      /* Text↔text: do not force speech (optional 🔊 still works via ▶ Hear) */
+      if(speakOn && !schoolSession) speak(reply, false);
+      var vh=document.getElementById('voiceHint');
+      if(vh && schoolSession && sessionTextTurn){
+        vh.textContent='Text mode this turn · turn on mic or end typing for voice class';
+      }else if(vh && speakOn && !schoolSession){
+        vh.textContent='If you hear nothing, tap ▶ Hear under the reply (browser security).';
+      }
+    }
     if(data.grade)applyGrade(data.grade);
-    var vh=document.getElementById('voiceHint');
-    if(vh && speakOn) vh.textContent='If you hear nothing, tap ▶ Hear under the reply (browser security).';
   }catch(e){
     addBubble('err','Network error: '+(e.message||'failed')+'. XAI_API_KEY on Vercel (nektaronbase-cells-projects / teachaid).',false);
   }finally{
-    btn.disabled=false;
-    btn.textContent='Send';
+    if(btn){ btn.disabled=false; btn.textContent='Send'; }
+    sessionTextTurn=false;
   }
 }
 
@@ -3000,6 +3331,8 @@ async function teacherAction(mode){
       warm.volume=0; speechSynthesis.speak(warm); speechSynthesis.cancel();
     }
   }catch(e){}
+  /* Teach me / Keep going / Ready from session = voice turns */
+  if(schoolSession) sessionTextTurn=false;
   var line;
   if(mode==='explain')line='Teach me “'+BOOKS[cur].ch[chi].n+'” at a '+pace+' pace — friendly and clear.';
   else if(mode==='continue')line='Keep going at '+pace+' pace.';
@@ -3013,10 +3346,33 @@ async function sendChat(){
   var text=(input.value||'').trim();
   if(!text)return;
   input.value='';
+  /* Typing always text↔text, even if red light is on */
+  sessionTextTurn=true;
+  sessionListenLoop=false;
+  try{ if(recog&&listening) recog.stop(); }catch(e){}
+  listening=false;
   await callTeacher('ask',text);
 }
 document.getElementById('chatIn').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();sendChat()}
+});
+document.getElementById('chatIn').addEventListener('focus',function(){
+  if(schoolSession){
+    document.body.classList.add('session-typing');
+    var st=document.getElementById('sessionStatus');
+    if(st) st.textContent='Typing · this message will be text↔text. Red light stays on.';
+  }
+});
+document.getElementById('chatIn').addEventListener('blur',function(){
+  if(!(this.value||'').trim()) document.body.classList.remove('session-typing');
+});
+document.getElementById('chatIn').addEventListener('input',function(){
+  if(schoolSession && (this.value||'').trim()){
+    sessionListenLoop=false;
+    document.body.classList.add('session-typing');
+  }else if(!(this.value||'').trim()){
+    document.body.classList.remove('session-typing');
+  }
 });
 
 renderCustomBooksUI();

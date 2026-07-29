@@ -219,7 +219,7 @@
       creditHint: "Arts GE proxy",
       level: "college",
       outcomes: [
-        "Use elements and principles of design in analysis",
+        "Use elements of art and design principles in analysis",
         "Situate artworks in historical/cultural context",
       ],
     },
@@ -229,7 +229,7 @@
       creditHint: "Arts GE proxy (music)",
       level: "college",
       outcomes: [
-        "Read basic staff/rhythm concepts",
+        "Read basic staff/rhythm — music basics for analysis",
         "Explain scales, keys, intervals, and simple chords",
       ],
     },

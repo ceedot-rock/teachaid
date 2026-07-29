@@ -139,7 +139,7 @@ textarea{min-height:56px}
 .upload-card .label{margin-top:0}
 .upload-card p.hint{font-size:.8rem;color:#9ca3af;margin:0 0 10px;line-height:1.4}
 .upload-card textarea{min-height:88px;margin-bottom:8px}
-.upload-card input[type=text],.upload-card input[type=file]{width:100%;margin-bottom:8px}
+.upload-card input[type=text],.upload-card input[type=file],.upload-card select{width:100%;margin-bottom:8px}
 .upload-card input[type=file]{font-size:.78rem;color:#9ca3af;padding:8px 0}
 .upload-status{font-size:.78rem;color:#94a3b8;min-height:1.2em;margin:6px 0 0}
 .upload-status.err{color:#fca5a5}
@@ -150,6 +150,16 @@ textarea{min-height:56px}
 .card-row{display:flex;align-items:flex-start;gap:8px}
 .card-row .card-main{flex:1;min-width:0;cursor:pointer}
 .card .del-btn{flex-shrink:0;background:#1a1a28;border:1px solid #3a2a2a;color:#fca5a5;border-radius:8px;padding:6px 10px;font-size:.72rem;cursor:pointer;margin-top:2px}
+.mode-tabs{display:flex;gap:6px;margin:0 0 12px}
+.mode-tabs button{flex:1;background:#1a1a28;border:1px solid #2a2a3c;color:#9ca3af;padding:9px 8px;border-radius:10px;font-size:.78rem;font-weight:650;cursor:pointer}
+.mode-tabs button.on{border-color:#5eead4;color:#5eead4;background:rgba(94,234,212,.08)}
+.curr-sub{display:none}
+.curr-sub.on{display:block}
+.sources-line{font-size:.7rem;color:#6b7280;margin-top:6px}
+.teaser-card{background:linear-gradient(135deg,rgba(94,234,212,.08),rgba(147,197,253,.06));border:1px solid rgba(94,234,212,.28);border-radius:14px;padding:14px 15px;margin-bottom:14px;cursor:pointer}
+.teaser-card h3{font-size:.95rem;margin-bottom:4px}
+.teaser-card p{font-size:.8rem;color:#9ca3af}
+.ch-meta{font-size:.72rem;color:#94a3b8;margin-top:4px}
 
 </style>
 </head>
@@ -164,6 +174,7 @@ textarea{min-height:56px}
   </div>
   <nav class="infobar-links" aria-label="Site links">
     <a href="#" onclick="show('home');return false">Home</a>
+    <a href="#" onclick="show('curriculum');return false">Curriculum</a>
     <a href="#" onclick="show('books');return false">Teachers</a>
     <a href="#" onclick="show('journal');return false">Journal</a>
     <a href="https://github.com/ceedot-rock/splabs-brand" target="_blank" rel="noopener">SPLabs</a>
@@ -174,21 +185,13 @@ textarea{min-height:56px}
 </header>
 
 <div id="home" class="wrap">
-<div class="upload-card" id="loadDocCard">
-  <p class="label">Load document → curriculum</p>
-  <p class="hint">Upload notes, a lesson outline, or paste text. TEACHAiD builds chapters and assigns a certified teacher for that book.</p>
-  <label for="docTitle">Optional title</label>
-  <input type="text" id="docTitle" placeholder="e.g. Intro to Fractions" autocomplete="off"/>
-  <label for="docFile">File (.txt, .md, .csv, .html)</label>
-  <input type="file" id="docFile" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,text/plain,text/markdown,text/html"/>
-  <label for="docPaste">Or paste materials</label>
-  <textarea id="docPaste" placeholder="Paste lesson notes, worksheet text, or a study guide…"></textarea>
-  <button class="btn" type="button" id="buildCurrBtn" onclick="buildCurriculumFromUpload()">Build curriculum</button>
-  <p class="upload-status" id="uploadStatus"></p>
+<div class="teaser-card" onclick="show('curriculum')" role="button" tabindex="0">
+  <h3>📚 Curriculum · load documents</h3>
+  <p>Create a new textbook or add materials to an existing one. Certified teacher included.</p>
 </div>
 
 <p class="label">Your books</p>
-<div class="custom-list" id="customBooksHome"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — load a document above.</p></div>
+<div class="custom-list" id="customBooksHome"><p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — open Curriculum to load a document.</p></div>
 
 <p class="label">Start here</p>
 <div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>What counting is, numbers as names, and zero</p><div class="teacher-pill">Teacher Mira</div></div>
@@ -291,6 +294,44 @@ textarea{min-height:56px}
 <div id="jList"><p style="color:#71717a;font-size:.9rem">None yet.</p></div>
 </div>
 
+<div id="curriculum" class="wrap hidden">
+<div class="topbar"><h2>Curriculum</h2></div>
+<p class="legal" style="text-align:left;margin:0 0 12px">Upload materials to <strong>create</strong> a new textbook or <strong>add</strong> chapters to one you already built. TEACHAiD · SPLabs.</p>
+
+<div class="mode-tabs" role="tablist" aria-label="Curriculum mode">
+  <button type="button" class="on" id="modeCreateBtn" onclick="setCurrMode('create')">Create new</button>
+  <button type="button" id="modeAddBtn" onclick="setCurrMode('append')">Add to existing</button>
+</div>
+
+<div class="upload-card" id="loadDocCard">
+  <div id="currCreateOpts" class="curr-sub on">
+    <p class="hint">Start a new book from notes, a lesson outline, or paste. We assign a certified teacher and chapters.</p>
+    <label for="docTitle">Optional title</label>
+    <input type="text" id="docTitle" placeholder="e.g. Intro to Fractions" autocomplete="off"/>
+  </div>
+  <div id="currAppendOpts" class="curr-sub">
+    <p class="hint">New material becomes extra chapters on a book you already have (progress kept).</p>
+    <label for="appendTarget">Add to curriculum</label>
+    <select id="appendTarget"></select>
+  </div>
+  <label for="docFile">File (.txt, .md, .csv, .html)</label>
+  <input type="file" id="docFile" accept=".txt,.md,.markdown,.csv,.json,.html,.htm,text/plain,text/markdown,text/html"/>
+  <label for="docPaste">Or paste materials</label>
+  <textarea id="docPaste" placeholder="Paste lesson notes, worksheet text, or a study guide…"></textarea>
+  <button class="btn" type="button" id="buildCurrBtn" onclick="buildCurriculumFromUpload()">Create curriculum</button>
+  <p class="upload-status" id="uploadStatus"></p>
+</div>
+
+<p class="label">Your curricula</p>
+<div class="custom-list" id="customBooksCurr"><p style="color:#71717a;font-size:.85rem">None yet — create one above.</p></div>
+
+<p class="label">Starter library</p>
+<div class="card" onclick="openBook('s1')"><span class="tag">BOOK 01</span><h3>Counting</h3><p>Built-in · Teacher Mira</p></div>
+<div class="card" onclick="openBook('s2')"><span class="tag">BOOK 02</span><h3>Positive &amp; Negative</h3><p>Built-in · Teacher Nova</p></div>
+<div class="card" onclick="openBook('s3')"><span class="tag">BOOK 03</span><h3>How Computers Count</h3><p>Built-in · Teacher Bit</p></div>
+<div class="card" onclick="openBook('c1')"><span class="tag" style="background:rgba(147,197,253,.12);color:#93c5fd">COMPUTING</span><h3>Integers to Codes</h3><p>Built-in · Teacher Codex</p></div>
+</div>
+
 <div id="books" class="wrap hidden">
 <div class="topbar"><h2>Teachers</h2></div>
 <p class="legal" style="text-align:left;margin:0 0 12px">Each textbook has its own tutor. They teach that book only, notice what you are getting, and unlock the next chapter when you are ready. TEACHAiD · SPLabs.</p>
@@ -303,6 +344,7 @@ textarea{min-height:56px}
 
 <nav class="tabbar">
 <button class="tab on" id="tabHome" onclick="show('home')"><span>🏠</span>Home</button>
+<button class="tab" id="tabCurriculum" onclick="show('curriculum')"><span>📚</span>Curriculum</button>
 <button class="tab" id="tabJournal" onclick="show('journal')"><span>📓</span>Journal</button>
 <button class="tab" id="tabBooks" onclick="show('books')"><span>👩‍🏫</span>Teachers</button>
 </nav>
@@ -404,6 +446,8 @@ function newCustomId(){
   return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 }
 
+var currMode='create'; // create | append
+
 function setUploadStatus(msg,kind){
   var el=document.getElementById('uploadStatus');
   if(!el)return;
@@ -411,10 +455,73 @@ function setUploadStatus(msg,kind){
   el.className='upload-status'+(kind?' '+kind:'');
 }
 
+function setCurrMode(mode){
+  currMode=mode==='append'?'append':'create';
+  var createBtn=document.getElementById('modeCreateBtn');
+  var addBtn=document.getElementById('modeAddBtn');
+  var createOpts=document.getElementById('currCreateOpts');
+  var appendOpts=document.getElementById('currAppendOpts');
+  var btn=document.getElementById('buildCurrBtn');
+  if(createBtn)createBtn.className=currMode==='create'?'on':'';
+  if(addBtn)addBtn.className=currMode==='append'?'on':'';
+  if(createOpts)createOpts.className='curr-sub'+(currMode==='create'?' on':'');
+  if(appendOpts)appendOpts.className='curr-sub'+(currMode==='append'?' on':'');
+  if(btn)btn.textContent=currMode==='append'?'Add chapters':'Create curriculum';
+  if(currMode==='append')fillAppendTargetSelect();
+}
+
+function fillAppendTargetSelect(){
+  var sel=document.getElementById('appendTarget');
+  if(!sel)return;
+  var map=loadCustomBooks();
+  var ids=Object.keys(map).sort(function(a,b){
+    return (map[b].updatedAt||map[b].createdAt||0)-(map[a].updatedAt||map[a].createdAt||0);
+  });
+  var prev=sel.value;
+  if(!ids.length){
+    sel.innerHTML='<option value="">No custom curricula yet — create one first</option>';
+    return;
+  }
+  sel.innerHTML=ids.map(function(id){
+    var b=map[id];
+    var n=b.ch?b.ch.length:0;
+    return '<option value="'+esc(id)+'">'+esc(b.title)+' · '+esc(b.teacher)+' · '+n+' ch</option>';
+  }).join('');
+  if(prev&&map[prev])sel.value=prev;
+  else if(cur&&map[cur])sel.value=cur;
+}
+
 function stripHtmlToText(html){
   var d=document.createElement('div');
   d.innerHTML=html;
   return (d.textContent||d.innerText||'').replace(/\s+\n/g,'\n').trim();
+}
+
+function stripFinishFromChapter(ch){
+  if(!ch||!ch.h)return ch;
+  ch.h=String(ch.h)
+    .replace(/<div class=["']done-box["'][\s\S]*?<\/div>/gi,'')
+    .replace(/<button[^>]*onclick=["']finishBook\(\)["'][^>]*>[\s\S]*?<\/button>/gi,'');
+  return ch;
+}
+
+function ensureFinishOnLast(chList){
+  if(!chList||!chList.length)return;
+  chList.forEach(function(c){stripFinishFromChapter(c)});
+  var last=chList[chList.length-1];
+  if(!/finishBook\(\)/.test(last.h||'')){
+    last.h=(last.h||'')+'<div class="done-box"><p>You finished this book.</p><button class="btn" onclick="finishBook()">Finish book → Home</button></div>';
+  }
+}
+
+function pushSource(book,filename,charCount){
+  if(!book.sources)book.sources=[];
+  book.sources.push({
+    filename:filename||'paste',
+    charCount:charCount||0,
+    at:Date.now()
+  });
+  if(book.sources.length>20)book.sources=book.sources.slice(-20);
 }
 
 function readUploadedFile(file){
@@ -439,76 +546,154 @@ function readUploadedFile(file){
   });
 }
 
-async function buildCurriculumFromUpload(){
-  var btn=document.getElementById('buildCurrBtn');
+async function gatherUploadText(){
   var paste=(document.getElementById('docPaste').value||'').trim();
-  var titleHint=(document.getElementById('docTitle').value||'').trim();
   var fileInput=document.getElementById('docFile');
   var file=fileInput&&fileInput.files&&fileInput.files[0];
+  var fileData={text:'',filename:''};
+  if(file)fileData=await readUploadedFile(file);
+  var text=fileData.text||'';
+  if(paste)text=text?(text+'\n\n'+paste):paste;
+  text=text.trim();
+  return {text:text,filename:fileData.filename||'',fileInput:fileInput};
+}
 
+async function buildCurriculumFromUpload(){
+  var btn=document.getElementById('buildCurrBtn');
   setUploadStatus('Reading materials…','');
-  if(btn){btn.disabled=true;btn.textContent='Building…'}
+  if(btn){btn.disabled=true;btn.textContent=currMode==='append'?'Adding…':'Building…'}
 
   try{
-    var fileData={text:'',filename:''};
-    if(file)fileData=await readUploadedFile(file);
-    var text=(fileData.text||'');
-    if(paste){
-      text=text?(text+'\n\n'+paste):paste;
-    }
-    text=text.trim();
+    var gathered=await gatherUploadText();
+    var text=gathered.text;
     if(text.length<40){
       setUploadStatus('Add more text (paste or upload a .txt / .md file).','err');
       return;
     }
-    setUploadStatus('Building chapters with your teacher… this can take ~15–40s.','');
-    var r=await fetch('/api/curriculum',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        text:text.slice(0,48000),
-        filename:fileData.filename||'',
-        titleHint:titleHint,
-        audience:'complete beginners'
-      })
-    });
-    var data=await r.json().catch(function(){return{}});
-    if(!r.ok){
-      setUploadStatus(data.error||('HTTP '+r.status),'err');
-      return;
-    }
-    var book=data.book;
-    if(!book||!book.ch||!book.ch.length){
-      setUploadStatus('No chapters returned — try more structured notes.','err');
-      return;
-    }
-    book.custom=true;
-    if(data.source&&data.source.filename)book.sourceFile=data.source.filename;
-    book.createdAt=Date.now();
 
-    var id=newCustomId();
-    var map=loadCustomBooks();
-    map[id]=book;
-    saveCustomBooks(map);
-    mergeBooks();
-    renderCustomBooksUI();
+    if(currMode==='append'){
+      await appendCurriculum(text,gathered.filename);
+    }else{
+      await createCurriculum(text,gathered.filename);
+    }
 
     document.getElementById('docPaste').value='';
-    document.getElementById('docTitle').value='';
-    if(fileInput)fileInput.value='';
-    setUploadStatus('Ready: “'+book.title+'” with teacher '+book.teacher+' · '+book.ch.length+' chapters. Opening…','ok');
-    openBook(id);
+    var titleEl=document.getElementById('docTitle');
+    if(titleEl)titleEl.value='';
+    if(gathered.fileInput)gathered.fileInput.value='';
   }catch(e){
     setUploadStatus(e.message||'Build failed','err');
   }finally{
-    if(btn){btn.disabled=false;btn.textContent='Build curriculum'}
+    if(btn){
+      btn.disabled=false;
+      btn.textContent=currMode==='append'?'Add chapters':'Create curriculum';
+    }
   }
+}
+
+async function createCurriculum(text,filename){
+  var titleHint=(document.getElementById('docTitle').value||'').trim();
+  setUploadStatus('Creating curriculum… ~15–40s.','');
+  var r=await fetch('/api/curriculum',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      mode:'create',
+      text:text.slice(0,48000),
+      filename:filename||'',
+      titleHint:titleHint,
+      audience:'complete beginners'
+    })
+  });
+  var data=await r.json().catch(function(){return{}});
+  if(!r.ok)throw new Error(data.error||('HTTP '+r.status));
+  var book=data.book;
+  if(!book||!book.ch||!book.ch.length)throw new Error('No chapters returned — try more structured notes.');
+  book.custom=true;
+  book.createdAt=Date.now();
+  book.updatedAt=Date.now();
+  pushSource(book,filename||'paste',text.length);
+  if(data.source&&data.source.filename)book.sourceFile=data.source.filename;
+
+  var id=newCustomId();
+  var map=loadCustomBooks();
+  map[id]=book;
+  saveCustomBooks(map);
+  mergeBooks();
+  renderCustomBooksUI();
+  setUploadStatus('Created “'+book.title+'” · teacher '+book.teacher+' · '+book.ch.length+' chapters. Opening…','ok');
+  openBook(id);
+}
+
+async function appendCurriculum(text,filename){
+  var targetId=(document.getElementById('appendTarget').value||'').trim();
+  var map=loadCustomBooks();
+  if(!targetId||!map[targetId]){
+    throw new Error('Pick a curriculum to add to (create one first if the list is empty).');
+  }
+  var existing=map[targetId];
+  if(!existing.ch)existing.ch=[];
+  if(existing.ch.length>=20){
+    throw new Error('This book already has 20 chapters — start a new curriculum instead.');
+  }
+
+  setUploadStatus('Adding chapters to “'+existing.title+'”… ~15–40s.','');
+  var r=await fetch('/api/curriculum',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      mode:'append',
+      text:text.slice(0,48000),
+      filename:filename||'',
+      audience:'complete beginners',
+      existing:{
+        title:existing.title,
+        teacher:existing.teacher,
+        teacherBlurb:existing.teacherBlurb||'',
+        chapters:existing.ch.map(function(c){return {n:c.n,t:(c.t||'').slice(0,300)}})
+      }
+    })
+  });
+  var data=await r.json().catch(function(){return{}});
+  if(!r.ok)throw new Error(data.error||('HTTP '+r.status));
+  var newCh=data.chapters||(data.book&&data.book.ch)||[];
+  if(!newCh.length)throw new Error('No new chapters returned.');
+
+  // dedupe names against existing
+  var used={};
+  existing.ch.forEach(function(c){used[(c.n||'').toLowerCase()]=1});
+  var added=[];
+  newCh.forEach(function(c){
+    if(!c||!c.n)return;
+    var base=c.n,name=base,n=2;
+    while(used[name.toLowerCase()]){name=base+' '+n;n++}
+    used[name.toLowerCase()]=1;
+    c.n=name;
+    added.push(c);
+  });
+  if(!added.length)throw new Error('No usable new chapters.');
+
+  existing.ch=existing.ch.concat(added);
+  ensureFinishOnLast(existing.ch);
+  existing.updatedAt=Date.now();
+  pushSource(existing,filename||'paste',text.length);
+  if(existing.summary&&added.length){
+    existing.summary=String(existing.summary).replace(/\s*$/,'')+' · +'+added.length+' ch from new materials';
+    if(existing.summary.length>200)existing.summary=existing.summary.slice(0,197)+'…';
+  }
+
+  map[targetId]=existing;
+  saveCustomBooks(map);
+  mergeBooks();
+  renderCustomBooksUI();
+  setUploadStatus('Added '+added.length+' chapter'+(added.length===1?'':'s')+' to “'+existing.title+'” ('+existing.ch.length+' total). Opening…','ok');
+  openBook(targetId);
 }
 
 function deleteCustomBook(id,ev){
   if(ev){ev.stopPropagation();ev.preventDefault()}
   if(!id||id.charAt(0)!=='u')return;
-  if(!confirm('Remove this custom book from this device?'))return;
+  if(!confirm('Remove this custom curriculum from this device?'))return;
   var map=loadCustomBooks();
   delete map[id];
   saveCustomBooks(map);
@@ -519,42 +704,53 @@ function deleteCustomBook(id,ev){
   mergeBooks();
   renderCustomBooksUI();
   if(cur===id)goHome();
-  setUploadStatus('Removed custom book.','');
+  setUploadStatus('Removed curriculum.','');
+}
+
+function customBookCardHtml(id,b,withDelete){
+  var srcN=(b.sources&&b.sources.length)?b.sources.length:0;
+  var srcLine=srcN?'<div class="sources-line">'+srcN+' document'+(srcN===1?'':'s')+' loaded</div>':'';
+  var chN=b.ch?b.ch.length:0;
+  var del=withDelete
+    ?'<button type="button" class="del-btn" onclick="deleteCustomBook(\''+id+'\',event)" title="Remove">✕</button>'
+    :'';
+  return '<div class="card-row">'+
+    '<div class="card custom card-main" onclick="openBook(\''+id+'\')">'+
+    '<span class="tag">YOUR BOOK</span>'+
+    '<h3>'+esc(b.title)+'</h3>'+
+    '<p>'+esc(b.summary||(chN+' chapters'))+'</p>'+
+    '<div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>'+
+    '<div class="ch-meta">'+chN+' chapter'+(chN===1?'':'s')+'</div>'+
+    srcLine+
+    '</div>'+del+
+    '</div>';
 }
 
 function renderCustomBooksUI(){
   var home=document.getElementById('customBooksHome');
+  var curr=document.getElementById('customBooksCurr');
   var teach=document.getElementById('customTeachersList');
   var map=loadCustomBooks();
   var ids=Object.keys(map).sort(function(a,b){
-    return (map[b].createdAt||0)-(map[a].createdAt||0);
+    return (map[b].updatedAt||map[b].createdAt||0)-(map[a].updatedAt||map[a].createdAt||0);
   });
+  var emptyHome='<p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — open Curriculum to load a document.</p>';
+  var emptyCurr='<p style="color:#71717a;font-size:.85rem">None yet — create one above.</p>';
   if(home){
-    if(!ids.length){
-      home.innerHTML='<p style="color:#71717a;font-size:.85rem;margin-bottom:10px">None yet — load a document above.</p>';
-    }else{
-      home.innerHTML=ids.map(function(id){
-        var b=map[id];
-        return '<div class="card-row">'+
-          '<div class="card custom card-main" onclick="openBook(\''+id+'\')">'+
-          '<span class="tag">YOUR BOOK</span>'+
-          '<h3>'+esc(b.title)+'</h3>'+
-          '<p>'+esc(b.summary||(b.ch.length+' chapters'))+'</p>'+
-          '<div class="teacher-pill">Teacher '+esc(b.teacher)+'</div>'+
-          '</div>'+
-          '<button type="button" class="del-btn" onclick="deleteCustomBook(\''+id+'\',event)" title="Remove">✕</button>'+
-          '</div>';
-      }).join('');
-    }
+    home.innerHTML=ids.length?ids.map(function(id){return customBookCardHtml(id,map[id],true)}).join(''):emptyHome;
+  }
+  if(curr){
+    curr.innerHTML=ids.length?ids.map(function(id){return customBookCardHtml(id,map[id],true)}).join(''):emptyCurr;
   }
   if(teach){
     teach.innerHTML=ids.map(function(id){
       var b=map[id];
       return '<div class="card custom" onclick="openBook(\''+id+'\')">'+
         '<h3>'+esc(b.teacher)+' · '+esc(b.title)+'</h3>'+
-        '<p>'+esc(b.teacherBlurb||'Custom materials')+'</p></div>';
+        '<p>'+esc(b.teacherBlurb||'Custom materials')+' · '+(b.ch?b.ch.length:0)+' ch</p></div>';
     }).join('');
   }
+  fillAppendTargetSelect();
   // Journal book options
   var jBook=document.getElementById('jBook');
   if(jBook){
@@ -688,19 +884,27 @@ function setPace(p){
   document.getElementById('paceFast').className=p==='fast'?'on':'';
 }
 function show(which){
-  ['home','reader','journal','books'].forEach(function(id){
+  ['home','reader','journal','books','curriculum'].forEach(function(id){
     var el=document.getElementById(id);
+    if(!el)return;
     if(id===which)el.classList.remove('hidden');else el.classList.add('hidden');
   });
   document.getElementById('tabHome').className='tab'+(which==='home'?' on':'');
+  var tabC=document.getElementById('tabCurriculum');
+  if(tabC)tabC.className='tab'+(which==='curriculum'?' on':'');
   document.getElementById('tabJournal').className='tab'+(which==='journal'?' on':'');
   document.getElementById('tabBooks').className='tab'+(which==='books'?' on':'');
   if(which==='reader'){
     document.getElementById('tabHome').className='tab';
+    if(tabC)tabC.className='tab';
     document.getElementById('tabJournal').className='tab';
     document.getElementById('tabBooks').className='tab';
   }
   if(which==='journal')renderJ();
+  if(which==='curriculum'){
+    renderCustomBooksUI();
+    setCurrMode(currMode||'create');
+  }
   window.scrollTo(0,0);
 }
 function goHome(){show('home');cur=null}
@@ -1309,7 +1513,7 @@ renderCustomBooksUI();
 /* Force fresh app after deploy — unregister stale SWs then register */
 (function(){
   if(!('serviceWorker' in navigator))return;
-  var VER='v12';
+  var VER='v13';
   if(localStorage.getItem('teachaid_sw_ver')!==VER){
     navigator.serviceWorker.getRegistrations().then(function(regs){
       return Promise.all(regs.map(function(r){return r.unregister()}));

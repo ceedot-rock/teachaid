@@ -23,7 +23,7 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 ## Contents
 
 - Beginner path: Counting → Positive & Negative → How Computers Count  
-- **Load document → curriculum**: upload `.txt` / `.md` / paste notes → Grok builds chapters + assigns a teacher (stored on device)  
+- **Curriculum tab**: **Create new** or **Add to existing** — upload `.txt` / `.md` / paste → Grok builds or appends chapters (on-device)  
 - Games with a clear finish (not infinite loops)  
 - Learning Journal (saved on device)  
 - **Certified teacher per textbook** (Mira, Nova, Bit, Codex) — grounded in that book only  
@@ -37,6 +37,7 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 
 ```json
 {
+  "mode": "create",
   "text": "…lesson materials…",
   "filename": "optional.txt",
   "titleHint": "optional title",
@@ -44,7 +45,21 @@ Teacher chat needs the API (`/api/chat`) with `XAI_API_KEY` — use `vercel dev`
 }
 ```
 
-Returns `{ book: { title, teacher, teacherBlurb, avatar, summary, ch: [{ n, h, t }] }, source }`.  
+**Append** (add chapters to an existing book):
+
+```json
+{
+  "mode": "append",
+  "text": "…new materials…",
+  "existing": {
+    "title": "My book",
+    "teacher": "Sage",
+    "chapters": [{ "n": "Intro", "t": "…" }]
+  }
+}
+```
+
+Create returns `{ mode, book, source }`. Append returns `{ mode, chapters, source }`.  
 Needs `XAI_API_KEY` (same as teacher chat).  
 
 

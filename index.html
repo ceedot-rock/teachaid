@@ -665,7 +665,31 @@ document.getElementById('chatIn').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();sendChat()}
 });
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(function(){})}
+/* Force fresh app after deploy — unregister stale SWs then register v6 */
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  var VER='v6';
+  if(localStorage.getItem('teachaid_sw_ver')!==VER){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      return Promise.all(regs.map(function(r){return r.unregister()}));
+    }).then(function(){
+      return caches.keys();
+    }).then(function(keys){
+      return Promise.all(keys.map(function(k){return caches.delete(k)}));
+    }).then(function(){
+      localStorage.setItem('teachaid_sw_ver',VER);
+      return navigator.serviceWorker.register('./sw.js?v=6');
+    }).then(function(){
+      // one hard reload so first paint is not stale
+      if(!sessionStorage.getItem('teachaid_reloaded_'+VER)){
+        sessionStorage.setItem('teachaid_reloaded_'+VER,'1');
+        location.reload();
+      }
+    }).catch(function(){});
+  }else{
+    navigator.serviceWorker.register('./sw.js?v=6').catch(function(){});
+  }
+})();
 show('home');
 </script>
 </body>

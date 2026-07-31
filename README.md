@@ -6,6 +6,15 @@ Interactive school app for complete beginners — learn by doing, ask anything (
 
 Open the Vercel deployment URL for this repo.
 
+## Related (portfolio)
+
+| Project | Role |
+|---------|------|
+| [CuNi](https://github.com/ceedot-rock/cuni) | Exact multi-target language · [Studio](https://cuni-studio.fly.dev/) |
+| [Agent-Rider](https://github.com/ceedot-rock/Agent-Rider) | Multi-agent coordination |
+| [SlidPhi](https://github.com/ceedot-rock/SlidPhiLabs) | Omni-Dormant integer codecs (`slid-phi` on npm) |
+| [quikgater](https://github.com/ceedot-rock/quikgater) | Pay-per-fact web fetch for agents (x402) |
+
 ## Local
 
 ```bash

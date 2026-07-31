@@ -670,6 +670,14 @@ body.school-session #lesson{
 <input type="text" id="jQ" placeholder="e.g. Why do we need zero?">
 <button class="btn" onclick="saveJ()">Save</button>
 </div>
+<div class="j-card" style="margin-top:14px">
+<p class="label" style="margin-top:0">Progress backup (slid-phi)</p>
+<p class="hint" style="margin:0 0 10px">Pack chapter scores with Omni-Dormant codecs for a compact share code. Stays on-device unless you copy it.</p>
+<button type="button" class="btn secondary" onclick="exportProgressSp()">Export progress code</button>
+<textarea id="spProgressCode" rows="3" placeholder="TASP1.… paste or copy here" style="margin-top:10px;width:100%;font-family:ui-monospace,monospace;font-size:.8rem"></textarea>
+<button type="button" class="btn" onclick="importProgressSp()">Import progress code</button>
+<p class="upload-status" id="spProgressStatus"></p>
+</div>
 <div class="label">Your entries</div>
 <div id="jList"><p style="color:#71717a;font-size:.9rem">None yet.</p></div>
 </div>
@@ -913,12 +921,26 @@ body.school-session #lesson{
 <script src="lib/student-referral.js"></script>
 <script src="lib/chaternities.js"></script>
 <script src="lib/path-ui.js"></script>
+<script src="lib/slidPhiPack.js"></script>
+<script type="module">
+/* Load slid-phi from npm CDN for browser pack/export (graceful if offline). */
+try {
+  const sp = await import("https://cdn.jsdelivr.net/npm/slid-phi@2.1.1/+esm");
+  window.slidPhi = { encode: sp.encode, decode: sp.decode };
+  if (window.TeachaidSlidPhi && window.TeachaidSlidPhi.setCodec) {
+    window.TeachaidSlidPhi.setCodec(window.slidPhi);
+  }
+} catch (e) {
+  console.warn("slid-phi CDN unavailable; progress pack needs network once", e);
+}
+</script>
 <script>
 /* BUILTIN_BOOKS + BUILTIN_TRACKS; TeachaidMastery; TeachaidReferral */
 if(typeof BUILTIN_BOOKS==='undefined'){var BUILTIN_BOOKS={};}
 if(typeof BUILTIN_TRACKS==='undefined'){var BUILTIN_TRACKS=[];}
 var TM=typeof TeachaidMastery!=='undefined'?TeachaidMastery:{MASTERY_MIN:91};
 var TR=typeof TeachaidReferral!=='undefined'?TeachaidReferral:null;
+var TSP=typeof TeachaidSlidPhi!=='undefined'?TeachaidSlidPhi:null;
 
 var CUSTOM_KEY='teachaid_custom_books_v1';
 var BOOKS={};
@@ -1443,6 +1465,49 @@ function histKey(){return cur||'_none'}
 function getHist(){var k=histKey();if(!histories[k])histories[k]=[];return histories[k]}
 function loadAllProgress(){try{return JSON.parse(localStorage.getItem(PK)||'{}')}catch(e){return{}}}
 function saveAllProgress(all){localStorage.setItem(PK,JSON.stringify(all))}
+function exportProgressSp(){
+  var st=document.getElementById('spProgressStatus');
+  var ta=document.getElementById('spProgressCode');
+  try{
+    if(!TSP||!TSP.available()){
+      if(window.slidPhi&&TSP)TSP.setCodec(window.slidPhi);
+    }
+    if(!TSP||!TSP.available()){
+      if(st){st.textContent='slid-phi not loaded yet — wait a second and retry (needs network once).';st.className='upload-status err'}
+      return;
+    }
+    var code=TSP.exportProgressCode(loadAllProgress());
+    if(ta)ta.value=code;
+    if(st){st.textContent='Exported. Copy the code to back up or move devices.';st.className='upload-status ok'}
+  }catch(e){
+    if(st){st.textContent='Export failed: '+(e&&e.message||e);st.className='upload-status err'}
+  }
+}
+function importProgressSp(){
+  var st=document.getElementById('spProgressStatus');
+  var ta=document.getElementById('spProgressCode');
+  try{
+    if(!TSP||!TSP.available()){
+      if(window.slidPhi&&TSP)TSP.setCodec(window.slidPhi);
+    }
+    if(!TSP||!TSP.available()){
+      if(st){st.textContent='slid-phi not loaded yet — wait a second and retry.';st.className='upload-status err'}
+      return;
+    }
+    var code=(ta&&ta.value||'').trim();
+    if(!code){if(st){st.textContent='Paste a TASP1. code first.';st.className='upload-status err'}return}
+    var imported=TSP.importProgressCode(code);
+    var cur=loadAllProgress();
+    // merge books (imported wins on overlap)
+    Object.keys(imported).forEach(function(k){cur[k]=imported[k]});
+    saveAllProgress(cur);
+    if(st){st.textContent='Imported progress for '+Object.keys(imported).length+' book(s).';st.className='upload-status ok'}
+    try{renderGradeUI()}catch(e){}
+    try{renderChNavOnly()}catch(e){}
+  }catch(e){
+    if(st){st.textContent='Import failed: '+(e&&e.message||e);st.className='upload-status err'}
+  }
+}
 function getProgress(bookId){
   var all=loadAllProgress();
   if(!all[bookId])all[bookId]={unlockedThrough:0,grades:{}};

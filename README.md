@@ -15,6 +15,10 @@ Open the Vercel deployment URL for this repo.
 | [SlidPhi](https://github.com/ceedot-rock/SlidPhiLabs) | Omni-Dormant integer codecs (`slid-phi` on npm) |
 | [quikgater](https://github.com/ceedot-rock/quikgater) | Pay-per-fact web fetch for agents (x402) |
 
+## Progress backup (slid-phi)
+
+Journal → **Export / Import progress code** packs chapter scores with [`slid-phi`](https://www.npmjs.com/package/slid-phi) (`lib/slidPhiPack.js`, codes prefix `TASP1.`). Browser loads the codec from jsDelivr once; Node tests use the local npm dependency.
+
 ## Local
 
 ```bash

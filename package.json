@@ -11,5 +11,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "slid-phi": "^2.1.1"
   }
 }

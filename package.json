@@ -13,6 +13,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "slid-phi": "^2.1.1"
+    "slid-phi": "^2.1.2"
   }
 }
